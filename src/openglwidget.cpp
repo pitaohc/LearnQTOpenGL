@@ -1,4 +1,4 @@
-﻿#include "openglwidget.h"
+#include "openglwidget.h"
 
 
 
