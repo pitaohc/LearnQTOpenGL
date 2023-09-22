@@ -5,6 +5,8 @@
 #include <QOpenGLWidget>
 #include <qopenglfunctions_3_3_core.h>
 
+#include<vector>
+
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -17,16 +19,17 @@ protected:
 private:
     unsigned int VAO, VBO, EBO;
     unsigned int shaderProgram;
-    float vertices[12] = {
-        +0.5f, +0.5f, +0.0f, 
+    std::vector<float> vertices = { 
+        +0.5f, +0.5f, +0.0f,
         -0.5f, +0.5f, +0.0f,
         -0.5f, -0.5f, +0.0f,
-        +0.5f, -0.5f, +0.0f
-    };
-    unsigned int indices[6] = {
+        +0.5f, -0.5f, +0.0f };
+
+    std::vector<unsigned int> indices = {
         0, 1, 2,
         0, 2, 3
     };
+
     const char* vertexShaderSource = "#version 330 core\n"
                                      "layout (location = 0) in vec3 aPos;\n"
                                      "void main()\n"
