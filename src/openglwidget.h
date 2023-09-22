@@ -12,13 +12,16 @@ class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
 public:
     explicit OpenGLWidget(QWidget* parent = nullptr);
+    ~OpenGLWidget();
+    void setNewRect(float dx, float dy, float dz);
+    void cleanAllRects();
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
-    unsigned int VAO, VBO, EBO;
     unsigned int shaderProgram;
+    std::vector<unsigned int> VAOs, VBOs, EBOs;
     std::vector<float> vertices = { 
         +0.5f, +0.5f, +0.0f,
         -0.5f, +0.5f, +0.0f,
@@ -42,6 +45,9 @@ private:
                                        "{\n"
                                        "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
                                        "}\n\0";
+
+    void initShaderProgram();
+
 signals:
 
 };
