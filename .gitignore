@@ -76,3 +76,5 @@ Thumbs.db
 .vs
 debug
 release
+bin
+build
