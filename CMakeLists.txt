@@ -25,6 +25,15 @@ message("UI Files:")
 message(${UI_FILES})
 # 将ui文件添加到筛选器
 source_group("Form Files" FILES ${UI_FILES})
+#################################################
+# 添加shader文件
+set(SHADER_DIRS shader)
+file(GLOB_RECURSE SHADER_FILES ${SHADER_DIRS}/*.frag ${SHADER_DIRS}/*.vert ${SHADER_DIRS}/*.vs ${SHADER_DIRS}/*.fs)
+message("SHADER Files:")
+message(${SHADER_FILES})
+# 将shader文件添加到筛选器
+# Note: 只有在 add_executable() 中的文件才会被 source_group 分组. 如果你发现有些文件没有被正确分组, 应该首先确认这些文件是否出现在 add_executable() 的 [source-x] 列表中.
+source_group("Shader Files" FILES ${SHADER_FILES}) 
 
 #################################################
 # 添加头文件目录
@@ -46,7 +55,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /SUBSYSTEM:CONSOLE /ENTRY:mainCRTStartup")
 
 #################################################
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADER_FILES} ${ui_FILES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADER_FILES} ${ui_FILES} ${SHADER_FILES})
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets )
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
