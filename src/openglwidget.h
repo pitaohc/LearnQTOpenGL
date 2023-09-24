@@ -20,7 +20,7 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
-
+    QTimer* timer;
     QOpenGLShaderProgram shaderProgram;
     std::vector<unsigned int> VAOs, VBOs, EBOs;
     std::vector<float> vertices = { 
@@ -35,7 +35,8 @@ private:
     };
 
     void initShaderProgram();
-
+public slots:
+    void onTimeout();
 signals:
 
 };

@@ -1,6 +1,9 @@
 #include "openglwidget.h"
 #include <qdebug.h>
 #include <string>
+
+#include <QtCore/QTimer>
+#include <QtCore/QTime>
 #ifdef _DEBUG
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -8,8 +11,9 @@
 #endif // _DEBUG
 OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-
-
+    timer = new QTimer(this); //timer只负责触发onTimeout()函数，不负责获取时间
+    connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    timer->start(1000 / 256);
 }
 
 OpenGLWidget::~OpenGLWidget()
@@ -28,7 +32,7 @@ void OpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
 
     // 设置渲染方式
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     initShaderProgram();
 
@@ -154,4 +158,34 @@ void OpenGLWidget::cleanAllRects()
     EBOs.clear();
     doneCurrent();
     update();
+}
+
+void OpenGLWidget::onTimeout() {
+    //int msesecondTime = QTime::currentTime().msecsSinceStartOfDay();
+    //float blueColor = sin(msesecondTime / 789) / 2.0f + 0.5f;
+    static float blueColor = 0.0f;
+    static float step = 0.01f;
+
+    blueColor += step;
+    if (blueColor > 1.0f) {
+        step = -0.01f;
+        blueColor = 1.0f - 0.001f;
+    }
+    else if (blueColor < 0.0f) {
+        step = 0.01f;
+        blueColor = 0.0f + 0.001f;
+    }
+#ifdef _DEBUG
+    fmt::print(fmt::fg(
+        fmt::rgb((1.0f - blueColor) * 256, 0, blueColor * 256)),
+        "BlueColor value is {:.2}, step is {:+.2}\n",blueColor, step);
+#endif // _DEBUG
+
+
+    makeCurrent();
+    shaderProgram.setUniformValue("ourColor", 
+        1.0f - blueColor, 0.0f, blueColor,1.0f);
+    doneCurrent();
+    update();
+
 }
