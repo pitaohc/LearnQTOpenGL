@@ -1,6 +1,6 @@
 #include "openglwidget.h"
 #include <qdebug.h>
-
+#include <string>
 #ifdef _DEBUG
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -8,7 +8,7 @@
 #endif // _DEBUG
 OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
-    shaderProgram = 0;
+
 
 }
 
@@ -20,14 +20,14 @@ OpenGLWidget::~OpenGLWidget()
     VBOs.clear();
     glDeleteBuffers(EBOs.size(), EBOs.data());
     EBOs.clear();
-    glDeleteProgram(shaderProgram);
+    shaderProgram.release();
 }
 
 void OpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    // 设置渲染方式
+    // 璁剧疆娓叉煋鏂瑰紡
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     initShaderProgram();
@@ -43,7 +43,7 @@ void OpenGLWidget::paintGL()
     glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(shaderProgram);
+    shaderProgram.bind();
     for (size_t i = 0; i < VAOs.size(); i++)
     {
         glBindVertexArray(VAOs[i]);
@@ -60,42 +60,29 @@ void OpenGLWidget::initShaderProgram()
 {
     int success;
     char infoLog[512];
-    // 编译着色器
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-    // 检查编译是否成功
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    std::string vertexShaderPath = "../shader/rectangle.vert";
+    std::string fragmentShaderPath = "../shader/rectangle.frag";
+
+    success = shaderProgram.addShaderFromSourceFile(
+        QOpenGLShader::Vertex, vertexShaderPath.c_str());
+    //success = shaderProgram.addCacheableShaderFromSourceCode(
+    //    QOpenGLShader::Vertex, vertexShaderSource);
     if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog;
+        qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" 
+            << shaderProgram.log();
+    }
+    success = shaderProgram.addShaderFromSourceFile(
+        QOpenGLShader::Fragment, fragmentShaderPath.c_str());
+    if (!success) {
+        qDebug() << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+            << shaderProgram.log();
+    }
+    success = shaderProgram.link();
+    if (!success) {
+        qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" 
+            << shaderProgram.log();
     }
 
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        qDebug() << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog;
-    }
-
-    // 创建着色器程序
-    shaderProgram = glCreateProgram();
-    // 将着色器附加到程序上
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    // 链接着色器程序
-    glLinkProgram(shaderProgram);
-    // 检查链接是否成功
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-        qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog;
-    }
-    // 删除着色器
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 #ifdef _DEBUG
     fmt::print(fmt::fg(fmt::color::green), "Shader Compiled Successfully!!!\n");
 #endif // _DEBUG
