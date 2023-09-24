@@ -97,11 +97,12 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     makeCurrent();
     unsigned int VAO, VBO, EBO;
     std::vector<float> vertices = this->vertices;
-    for (size_t i = 0; i < vertices.size()/3; i++)
+    int step = 6; //x,y,z,r,g,b
+    for (size_t i = 0; i < vertices.size()/ step; i++)
     {
-        vertices[i*3+0] += dx;
-        vertices[i*3+1] += dy;
-        vertices[i*3+2] += dz;
+        vertices[i*step+0] += dx;
+        vertices[i*step+1] += dy;
+        vertices[i*step+2] += dz;
     }
 
     glGenVertexArrays(1, &VAO);
@@ -119,8 +120,10 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type), vertices.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, step * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, step * sizeof(float), (void*)(3* sizeof(decltype(indices)::value_type)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -163,29 +166,29 @@ void OpenGLWidget::cleanAllRects()
 void OpenGLWidget::onTimeout() {
     //int msesecondTime = QTime::currentTime().msecsSinceStartOfDay();
     //float blueColor = sin(msesecondTime / 789) / 2.0f + 0.5f;
-    static float blueColor = 0.0f;
-    static float step = 0.01f;
-
-    blueColor += step;
-    if (blueColor > 1.0f) {
-        step = -0.01f;
-        blueColor = 1.0f - 0.001f;
-    }
-    else if (blueColor < 0.0f) {
-        step = 0.01f;
-        blueColor = 0.0f + 0.001f;
-    }
-#ifdef _DEBUG
-    fmt::print(fmt::fg(
-        fmt::rgb((1.0f - blueColor) * 256, 0, blueColor * 256)),
-        "BlueColor value is {:.2}, step is {:+.2}\n",blueColor, step);
-#endif // _DEBUG
-
-
-    makeCurrent();
-    shaderProgram.setUniformValue("ourColor", 
-        1.0f - blueColor, 0.0f, blueColor,1.0f);
-    doneCurrent();
-    update();
+//    static float blueColor = 0.0f;
+//    static float step = 0.01f;
+//
+//    blueColor += step;
+//    if (blueColor > 1.0f) {
+//        step = -0.01f;
+//        blueColor = 1.0f - 0.001f;
+//    }
+//    else if (blueColor < 0.0f) {
+//        step = 0.01f;
+//        blueColor = 0.0f + 0.001f;
+//    }
+//#ifdef _DEBUG
+//    fmt::print(fmt::fg(
+//        fmt::rgb((1.0f - blueColor) * 256, 0, blueColor * 256)),
+//        "BlueColor value is {:.2}, step is {:+.2}\n",blueColor, step);
+//#endif // _DEBUG
+//
+//
+//    makeCurrent();
+//    shaderProgram.setUniformValue("ourColor", 
+//        1.0f - blueColor, 0.0f, blueColor,1.0f);
+//    doneCurrent();
+//    update();
 
 }
