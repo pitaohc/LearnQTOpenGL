@@ -8,8 +8,16 @@
 #include<vector>
 
 struct Vertex {
-    float x, y, z;
-    float r, g, b;
+    float position[3];
+    float color[3];
+    Vertex(float x, float y, float z, float r, float g, float b) {
+        position[0] = x;
+        position[1] = y;
+        position[2] = z;
+        color[0] = r;
+        color[1] = g;
+        color[2] = b;
+    }
 };
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
@@ -28,16 +36,24 @@ private:
     QTimer* timer;
     QOpenGLShaderProgram shaderProgram;
     std::vector<unsigned int> VAOs, VBOs, EBOs;
-    std::vector<float> vertices = { // 顶点坐标和颜色
-        +0.5f, +0.5f, +0.0f, 1.0f, 0.0f, 0.0f, // 右上角
-        -0.5f, +0.5f, +0.0f, 0.0f, 0.0f, 0.0f, // 左上角
-        -0.5f, -0.5f, +0.0f, 0.0f, 0.0f, 1.0f, // 左下角
-        +0.5f, -0.5f, +0.0f, 1.0f, 0.0f, 1.0f, // 右下角
+    std::vector<Vertex> vertices = { // 顶点坐标和颜色
+{
+        +0.5f, +0.5f, +0.0f, 1.0f, 0.0f, 0.0f // 右上角
+},
+{
+        -0.5f, +0.5f, +0.0f, 0.0f, 0.0f, 0.0f // 左上角
+},
+{
+        -0.5f, -0.5f, +0.0f, 0.0f, 0.0f, 1.0f // 左下角
+},
+{
+        +0.5f, -0.5f, +0.0f, 1.0f, 0.0f, 1.0f // 右下角
+},
     };
 
     std::vector<unsigned int> indices = {
         0, 1, 2,
-        0, 2, 3
+        //0, 2, 3
     };
 
     void initShaderProgram();

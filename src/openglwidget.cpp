@@ -33,6 +33,7 @@ void OpenGLWidget::initializeGL()
 
     // 设置渲染方式
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
     initShaderProgram();
 
@@ -52,6 +53,7 @@ void OpenGLWidget::paintGL()
     {
         glBindVertexArray(VAOs[i]);
         glDrawElements(GL_TRIANGLES, indices.size() , GL_UNSIGNED_INT, 0);
+        //glDrawElements(GL_POINTS, indices.size() , GL_UNSIGNED_INT, 0);
 
     }
     //for (const unsigned int VAO : VAOs) {
@@ -96,13 +98,13 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
 {
     makeCurrent();
     unsigned int VAO, VBO, EBO;
-    std::vector<float> vertices = this->vertices;
-    int step = 6; //x,y,z,r,g,b
-    for (size_t i = 0; i < vertices.size()/ step; i++)
+    std::vector<Vertex> vertices = this->vertices;
+    
+    for (size_t i = 0; i < vertices.size(); i++)
     {
-        vertices[i*step+0] += dx;
-        vertices[i*step+1] += dy;
-        vertices[i*step+2] += dz;
+        vertices[i].position[0] += dx;
+        vertices[i].position[1] += dy;
+        vertices[i].position[2] += dz;
     }
 
     glGenVertexArrays(1, &VAO);
@@ -120,9 +122,9 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type), vertices.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type), indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, step * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), (void*)(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, step * sizeof(float), (void*)(3* sizeof(decltype(indices)::value_type)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), (void*)(offsetof(Vertex, color)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -131,12 +133,9 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     doneCurrent();
     update();
 #ifdef _DEBUG
-    fmt::print(fmt::fg(fmt::color::green), "VAO Created Successfully!!!\n");
-    fmt::print("{}\n", VAOs);
-    fmt::print(fmt::fg(fmt::color::green), "VBO Created Successfully!!!\n");
-    fmt::print("{}\n", VBOs);
-    fmt::print(fmt::fg(fmt::color::green), "EBO Created Successfully!!!\n");
-    fmt::print("{}\n", EBOs);
+    fmt::print(fmt::fg(fmt::color::green), "VAO, VBO, EBO Created Successfully!!!\n");
+    fmt::print("{}, {}, {}\n", VAOs, VBOs,EBOs);
+
 #endif // _DEBUG
 
 }
@@ -144,12 +143,8 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
 void OpenGLWidget::cleanAllRects()
 {
 #ifdef _DEBUG
-    fmt::print(fmt::fg(fmt::color::yellow), "VAOs Cleaned Successfully!!!\n");
-    fmt::print("{}\n", VAOs);
-    fmt::print(fmt::fg(fmt::color::yellow), "VBOs Cleaned Successfully!!!\n");
-    fmt::print("{}\n", VBOs);
-    fmt::print(fmt::fg(fmt::color::yellow), "EBOs Cleaned Successfully!!!\n");
-    fmt::print("{}\n", EBOs);
+    fmt::print(fmt::fg(fmt::color::yellow), "VAOs, VBOs and EBOs Cleaned Successfully!!!\n");
+
 #endif // _DEBUG
 
     makeCurrent();
