@@ -9,22 +9,59 @@
 #include <fmt/ranges.h>
 #include <fmt/color.h>
 #endif // _DEBUG
-OpenGLWidget::OpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
+OpenGLWidget::OpenGLWidget(QWidget* parent) : 
+    QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
 {
     timer = new QTimer(this); //timer只负责触发onTimeout()函数，不负责获取时间
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(1000 / 256);
+
 }
 
 OpenGLWidget::~OpenGLWidget()
 {
+    if (timer != nullptr)
+    {
+        timer->stop();
+        delete timer;
+        timer = nullptr;
+#ifdef _DEBUG
+        fmt::print(fmt::fg(fmt::color::red), "Release timer successfully.\n");
+#endif // _DEBUG
+    }
+    if (texture != nullptr)
+    {
+        texture->destroy();
+        delete texture;
+        texture = nullptr;
+#ifdef _DEBUG
+        fmt::print(fmt::fg(fmt::color::red), "Release texture successfully.\n");
+#endif // _DEBUG
+    }
+    if (texture2 != nullptr)
+    {
+        texture2->destroy();
+        delete texture2;
+        texture2 = nullptr;
+#ifdef _DEBUG
+        fmt::print(fmt::fg(fmt::color::red), "Release texture2 successfully.\n");
+#endif // _DEBUG
+    }
+
     glDeleteVertexArrays(VAOs.size(), VAOs.data());
     VAOs.clear();
     glDeleteBuffers(VBOs.size(), VBOs.data());
     VBOs.clear();
     glDeleteBuffers(EBOs.size(), EBOs.data());
     EBOs.clear();
+#ifdef _DEBUG
+    fmt::print(fmt::fg(fmt::color::red), "Release VAOs, VBOs, EBOs successfully.\n");
+#endif // _DEBUG
     shaderProgram.release();
+#ifdef _DEBUG
+    fmt::print(fmt::fg(fmt::color::red), "Release shader successfully.\n");
+#endif // _DEBUG
+
 }
 
 void OpenGLWidget::initializeGL()
@@ -35,8 +72,8 @@ void OpenGLWidget::initializeGL()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
-    initShaderProgram();
-
+    loadShaderProgram();
+    loadTexture();
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -49,6 +86,8 @@ void OpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgram.bind();
+    texture->bind(0);
+    texture2->bind(1);
     for (size_t i = 0; i < VAOs.size(); i++)
     {
         glBindVertexArray(VAOs[i]);
@@ -62,7 +101,26 @@ void OpenGLWidget::paintGL()
     //}
 }
 
-void OpenGLWidget::initShaderProgram()
+void OpenGLWidget::loadTexture()
+{
+    texture = new QOpenGLTexture(
+        QImage("D:/DATA/Project/QT/LearnQTOpenGL/resources/texture.png").mirrored());
+    //输出texture的尺寸信息
+#ifdef _DEBUG
+    fmt::print(fmt::fg(fmt::color::green), "load texture successfully.");
+    fmt::print(" The shape is {}x{}px.\n", texture->width(), texture->height());
+#endif // _DEBUG
+    texture2 = new QOpenGLTexture(
+        QImage("D:/DATA/Project/QT/LearnQTOpenGL/resources/texture2.png").mirrored());
+    //输出texture的尺寸信息
+#ifdef _DEBUG
+    fmt::print(fmt::fg(fmt::color::green), "load texture2 successfully.");
+    fmt::print(" The shape is {}x{}px.\n", texture2->width(), texture2->height());
+#endif // _DEBUG
+}
+
+
+void OpenGLWidget::loadShaderProgram()
 {
     int success;
     char infoLog[512];
@@ -92,6 +150,9 @@ void OpenGLWidget::initShaderProgram()
 #ifdef _DEBUG
     fmt::print(fmt::fg(fmt::color::green), "Shader Compiled Successfully!!!\n");
 #endif // _DEBUG
+    shaderProgram.bind();
+    shaderProgram.setUniformValue("ourTexture", 0);
+    shaderProgram.setUniformValue("ourTexture2", 1);
 }
 
 void OpenGLWidget::setNewRect(float dx, float dy, float dz)
@@ -119,13 +180,20 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type), vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type), 
+        vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type), 
+        indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), (void*)(offsetof(Vertex, position)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+        (void*)(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), (void*)(offsetof(Vertex, color)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+        (void*)(offsetof(Vertex, color)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+        (void*)(offsetof(Vertex, uv)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
