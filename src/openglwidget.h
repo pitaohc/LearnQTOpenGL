@@ -33,10 +33,12 @@ public:
     void setNewRect(float dx, float dy, float dz);
     void cleanAllRects();
 protected:
+    void keyPressEvent(QKeyEvent* event) override;
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
+    float mixValue = 0.0f;
     QOpenGLTexture* texture;
     QOpenGLTexture* texture2;
     QTimer* timer;

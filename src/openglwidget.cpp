@@ -1,5 +1,6 @@
 #include "openglwidget.h"
 #include <qdebug.h>
+#include <QKeyEvent>
 #include <string>
 
 #include <QtCore/QTimer>
@@ -12,6 +13,7 @@
 OpenGLWidget::OpenGLWidget(QWidget* parent) : 
     QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
 {
+    setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
     timer = new QTimer(this); //timer只负责触发onTimeout()函数，不负责获取时间
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(1000 / 256);
@@ -99,7 +101,8 @@ void OpenGLWidget::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    //设置uniform变量
+    shaderProgram.setUniformValue("mixValue", mixValue);
     for (size_t i = 0; i < VAOs.size(); i++)
     {
         glBindVertexArray(VAOs[i]);
@@ -111,6 +114,34 @@ void OpenGLWidget::paintGL()
     //    glBindVertexArray(VAO);
     //    glDrawElements(GL_TRIANGLES, indices.size() , GL_UNSIGNED_INT, 0);
     //}
+}
+
+/*
+* 重写键盘事件
+*/
+void OpenGLWidget::keyPressEvent(QKeyEvent* event)
+{
+    switch (event->key())
+    {
+    case Qt::Key_Up:
+#ifdef _DEBUG
+        fmt::print("Key Up\n");
+#endif // _DEBUG
+        mixValue += 0.1f;
+        if (mixValue > 1.0f) {
+            mixValue = 1.0f;
+        }
+        break;
+    case Qt::Key_Down:
+#ifdef _DEBUG
+        fmt::print("Key Down\n");
+#endif // _DEBUG
+        mixValue -= 0.1f;
+        if (mixValue <= 0.0f) {
+            mixValue = 0.0f;
+        }
+    }
+    update();
 }
 
 void OpenGLWidget::loadTexture()
