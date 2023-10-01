@@ -2,6 +2,10 @@
 #include <qdebug.h>
 #include <string>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <QtCore/QTimer>
 #include <QtCore/QTime>
 #ifdef _DEBUG
@@ -12,6 +16,7 @@
 OpenGLWidget::OpenGLWidget(QWidget* parent) : 
     QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
 {
+    model = glm::mat4(1.0f);
     timer = new QTimer(this); //timer只负责触发onTimeout()函数，不负责获取时间
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(1000 / 256);
@@ -86,6 +91,8 @@ void OpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgram.bind();
+    
+    glUniformMatrix4fv(shaderProgram.uniformLocation("model") , 1, GL_FALSE, &model[0][0]);
     texture->bind(0);
     texture->generateMipMaps();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
@@ -99,7 +106,6 @@ void OpenGLWidget::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     for (size_t i = 0; i < VAOs.size(); i++)
     {
         glBindVertexArray(VAOs[i]);
@@ -239,31 +245,11 @@ void OpenGLWidget::cleanAllRects()
 }
 
 void OpenGLWidget::onTimeout() {
-    //int msesecondTime = QTime::currentTime().msecsSinceStartOfDay();
-    //float blueColor = sin(msesecondTime / 789) / 2.0f + 0.5f;
-//    static float blueColor = 0.0f;
-//    static float step = 0.01f;
-//
-//    blueColor += step;
-//    if (blueColor > 1.0f) {
-//        step = -0.01f;
-//        blueColor = 1.0f - 0.001f;
-//    }
-//    else if (blueColor < 0.0f) {
-//        step = 0.01f;
-//        blueColor = 0.0f + 0.001f;
-//    }
-//#ifdef _DEBUG
-//    fmt::print(fmt::fg(
-//        fmt::rgb((1.0f - blueColor) * 256, 0, blueColor * 256)),
-//        "BlueColor value is {:.2}, step is {:+.2}\n",blueColor, step);
-//#endif // _DEBUG
-//
-//
-//    makeCurrent();
-//    shaderProgram.setUniformValue("ourColor", 
-//        1.0f - blueColor, 0.0f, blueColor,1.0f);
-//    doneCurrent();
-//    update();
+    //获取当前毫秒数
+    int msesecondTime = QTime::currentTime().msec();
+    float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
+    model = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    update();
 
 }

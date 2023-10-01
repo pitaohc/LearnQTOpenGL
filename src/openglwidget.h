@@ -7,7 +7,7 @@
 #include <qopenglshaderprogram.h>
 #include<vector>
 #include <qopengltexture.h>
-
+#include <glm/matrix.hpp>
 struct Vertex {
     float position[3];
     float color[3];
@@ -37,6 +37,7 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
+    glm::mat4 model;
     QOpenGLTexture* texture;
     QOpenGLTexture* texture2;
     QTimer* timer;
