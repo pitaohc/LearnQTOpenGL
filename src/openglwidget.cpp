@@ -248,7 +248,13 @@ void OpenGLWidget::onTimeout() {
     //获取当前毫秒数
     int msesecondTime = QTime::currentTime().msec();
     float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
-    model = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 matrix = glm::mat4(1.0f);
+    //平移0.25
+    matrix = glm::translate(matrix, glm::vec3(0.5f, 0.5f, 0.0f)) * matrix;
+    matrix = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f)) * matrix;
+    matrix = glm::translate(matrix, glm::vec3(-0.5f, -0.5f, 0.0f)) * matrix;
+
+    model = matrix;
 
     update();
 
