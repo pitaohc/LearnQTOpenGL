@@ -16,6 +16,7 @@ find_package(Qt5 COMPONENTS core gui widgets  REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 #################################################
 # 添加ui文件
 set(UI_DIRS ui)
@@ -60,3 +61,4 @@ target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets )
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
