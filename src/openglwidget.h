@@ -1,13 +1,19 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
-
+//QT库
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <qopenglfunctions_3_3_core.h>
 #include <qopenglshaderprogram.h>
-#include<vector>
 #include <qopengltexture.h>
+//STL库
+#include <vector>
+#include <set>
+//GLM库
 #include <glm/matrix.hpp>
+#include <glm/glm.hpp>
+//自定义库
+#include "camera.h"
 struct Vertex {
     float position[3];
     float color[3];
@@ -33,14 +39,18 @@ public:
     void setNewRect(float dx, float dy, float dz);
     void cleanAllRects();
 protected:
+    void keyPressEvent(QKeyEvent* event) override;
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
+    Camera camera;
+    float deltaTime = 0.0f;
+    float mixValue = 0.0f;
     glm::mat4 model;
     QOpenGLTexture* texture;
     QOpenGLTexture* texture2;
-    QTimer* timer;
+    std::unique_ptr<QTimer> timer;
     QOpenGLShaderProgram shaderProgram;
     std::vector<unsigned int> VAOs, VBOs, EBOs;
     std::vector<Vertex> vertices = { // 顶点坐标和颜色

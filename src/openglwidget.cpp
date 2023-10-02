@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <QKeyEvent>
 #include <QtCore/QTimer>
 #include <QtCore/QTime>
 #ifdef _DEBUG
@@ -17,8 +18,11 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
 {
     model = glm::mat4(1.0f);
-    timer = new QTimer(this); //timer只负责触发onTimeout()函数，不负责获取时间
-    connect(timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    camera = Camera(glm::vec3(0.0f, 0.0f, 10.0f));
+    setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
+
+    timer = std::make_unique<QTimer>(this);//timer只负责触发onTimeout()函数，不负责获取时间
+    connect(timer.get(), SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(1000 / 256);
 
 }
@@ -28,8 +32,7 @@ OpenGLWidget::~OpenGLWidget()
     if (timer != nullptr)
     {
         timer->stop();
-        delete timer;
-        timer = nullptr;
+        timer.release();
 #ifdef _DEBUG
         fmt::print(fmt::fg(fmt::color::red), "Release timer successfully.\n");
 #endif // _DEBUG
@@ -93,6 +96,11 @@ void OpenGLWidget::paintGL()
     shaderProgram.bind();
     
     glUniformMatrix4fv(shaderProgram.uniformLocation("model") , 1, GL_FALSE, &model[0][0]);
+    
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 100.0f);
+    glm::mat4 view = camera.GetViewMatrix();
+    glUniformMatrix4fv(shaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(shaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
     texture->bind(0);
     texture->generateMipMaps();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
@@ -245,17 +253,76 @@ void OpenGLWidget::cleanAllRects()
 }
 
 void OpenGLWidget::onTimeout() {
-    //获取当前毫秒数
-    int msesecondTime = QTime::currentTime().msec();
-    float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
-    glm::mat4 matrix = glm::mat4(1.0f);
-    //平移0.25
-    matrix = glm::translate(matrix, glm::vec3(0.5f, 0.5f, 0.0f)) * matrix;
-    matrix = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f)) * matrix;
-    matrix = glm::translate(matrix, glm::vec3(-0.5f, -0.5f, 0.0f)) * matrix;
+    ////获取当前毫秒数
+    int currentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    static int lastTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    deltaTime = (currentTime * 1.0f - lastTime);
+    lastTime = currentTime;
+//#ifdef _DEBUG
+//    fmt::print("Tick Time: {}ms\n", deltaTime);
+//#endif // _DEBUG
 
-    model = matrix;
+
+    //float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
+    //glm::mat4 matrix = glm::mat4(1.0f);
+    ////平移0.25
+    //matrix = glm::translate(matrix, glm::vec3(0.5f, 0.5f, 0.0f)) * matrix;
+    //matrix = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f)) * matrix;
+    //matrix = glm::translate(matrix, glm::vec3(-0.5f, -0.5f, 0.0f)) * matrix;
+
+    //model = matrix;
 
     update();
 
+}
+
+/*
+* 重写键盘事件
+*/
+void OpenGLWidget::keyPressEvent(QKeyEvent* event)
+{
+    switch (event->key())
+    {
+    case Qt::Key_W:
+        //摄像机前进
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+        break;
+    case Qt::Key_S:
+        //摄像机后退
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        break;
+    case Qt::Key_A:
+        //摄像机左移
+        camera.ProcessKeyboard(LEFT, deltaTime);
+        break;
+    case Qt::Key_D:
+        //摄像机右移
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+        break;
+    case Qt::Key_Q:
+        //摄像机上移
+        camera.ProcessKeyboard(UP, deltaTime);
+        break;
+    case Qt::Key_E:
+        //摄像机下移
+        camera.ProcessKeyboard(UP, deltaTime);
+        break;
+    case Qt::Key_Up:
+#ifdef _DEBUG
+        fmt::print("Key Up\n");
+#endif // _DEBUG
+        mixValue += 0.1f;
+        if (mixValue > 1.0f) {
+            mixValue = 1.0f;
+        }
+        break;
+    case Qt::Key_Down:
+#ifdef _DEBUG
+        fmt::print("Key Down\n");
+#endif // _DEBUG
+        mixValue -= 0.1f;
+        if (mixValue <= 0.0f) {
+            mixValue = 0.0f;
+        }
+    }
 }
