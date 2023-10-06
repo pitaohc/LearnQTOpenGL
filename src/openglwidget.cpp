@@ -18,12 +18,19 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
 {
     model = glm::mat4(1.0f);
+    /*
+        注意：camera默认朝向为(0.0f,0.0f,-1.0f)，如果面片z轴坐标大于10会不在视野内。
+        并且z值越小，距离越远，面片在屏幕上也越小
+    */
     camera = Camera(glm::vec3(0.0f, 0.0f, 10.0f));
     setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
 
     timer = std::make_unique<QTimer>(this);//timer只负责触发onTimeout()函数，不负责获取时间
     connect(timer.get(), SIGNAL(timeout()), this, SLOT(onTimeout()));
     timer->start(1000 / 256);
+
+    timerKey = std::make_unique<QTimer>(this);//timer只负责触发onTimeout()函数，不负责获取时间
+    connect(timerKey.get(), SIGNAL(timeout()), this, SLOT(onTimeoutKey()));
 
 }
 
@@ -86,6 +93,10 @@ void OpenGLWidget::initializeGL()
 
 void OpenGLWidget::resizeGL(int w, int h)
 {
+#ifdef _DEBUG
+    fmt::print("INFO: resize to {}x{}\n", w, h);
+#endif //_DEBUG
+    glViewport(0, 0, w, h);
 }
 
 void OpenGLWidget::paintGL()
@@ -121,10 +132,6 @@ void OpenGLWidget::paintGL()
         //glDrawElements(GL_POINTS, indices.size() , GL_UNSIGNED_INT, 0);
 
     }
-    //for (const unsigned int VAO : VAOs) {
-    //    glBindVertexArray(VAO);
-    //    glDrawElements(GL_TRIANGLES, indices.size() , GL_UNSIGNED_INT, 0);
-    //}
 }
 
 void OpenGLWidget::loadTexture()
@@ -143,6 +150,49 @@ void OpenGLWidget::loadTexture()
     fmt::print(fmt::fg(fmt::color::green), "load texture2 successfully.");
     fmt::print(" The shape is {}x{}px.\n", texture2->width(), texture2->height());
 #endif // _DEBUG
+}
+
+void OpenGLWidget::onTimeoutKey()
+{
+#ifdef _DEBUG
+    fmt::print("Keys: {}\n", pressedKeys);
+#endif // _DEBUG
+    if (pressedKeys.empty())
+    {
+        timerKey->stop();
+        return;
+    }
+    for (auto& key : pressedKeys)
+    {
+        switch (key)
+        {
+        case Qt::Key_W:
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+            break;
+        case Qt::Key_S:
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+            break;
+        case Qt::Key_A:
+            camera.ProcessKeyboard(LEFT, deltaTime);
+            break;
+        case Qt::Key_D:
+            camera.ProcessKeyboard(RIGHT, deltaTime);
+            break;
+        case Qt::Key_Q:
+            camera.ProcessKeyboard(UP, deltaTime);
+            break;
+        case Qt::Key_E:
+            camera.ProcessKeyboard(DOWN, deltaTime);
+            break;
+        case Qt::Key_G:
+            camera.Position = glm::vec3(0.0f,0.0f,10.0f);
+        case Qt::Key_Escape:
+            //TODO 处理退出键
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 
@@ -258,9 +308,9 @@ void OpenGLWidget::onTimeout() {
     static int lastTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     deltaTime = (currentTime * 1.0f - lastTime);
     lastTime = currentTime;
-//#ifdef _DEBUG
-//    fmt::print("Tick Time: {}ms\n", deltaTime);
-//#endif // _DEBUG
+#ifdef _DEBUG
+    fmt::print("Tick Time: {}ms\n", deltaTime);
+#endif // _DEBUG
 
 
     //float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
@@ -281,48 +331,58 @@ void OpenGLWidget::onTimeout() {
 */
 void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 {
-    switch (event->key())
+    QOpenGLWidget::keyPressEvent(event);
+
+    //按键按下，key值放入容器，如果是长按触发的repeat就不判断
+    if (!event->isAutoRepeat())
     {
-    case Qt::Key_W:
-        //摄像机前进
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-        break;
-    case Qt::Key_S:
-        //摄像机后退
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-        break;
-    case Qt::Key_A:
-        //摄像机左移
-        camera.ProcessKeyboard(LEFT, deltaTime);
-        break;
-    case Qt::Key_D:
-        //摄像机右移
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-        break;
-    case Qt::Key_Q:
-        //摄像机上移
-        camera.ProcessKeyboard(UP, deltaTime);
-        break;
-    case Qt::Key_E:
-        //摄像机下移
-        camera.ProcessKeyboard(UP, deltaTime);
-        break;
-    case Qt::Key_Up:
-#ifdef _DEBUG
-        fmt::print("Key Up\n");
-#endif // _DEBUG
-        mixValue += 0.1f;
-        if (mixValue > 1.0f) {
-            mixValue = 1.0f;
-        }
-        break;
-    case Qt::Key_Down:
-#ifdef _DEBUG
-        fmt::print("Key Down\n");
-#endif // _DEBUG
-        mixValue -= 0.1f;
-        if (mixValue <= 0.0f) {
-            mixValue = 0.0f;
-        }
+        pressedKeys.insert(event->key());
     }
+    //判断是否运行，不然一直触发就一直不能timeout
+    if (!timerKey->isActive())
+    {
+        timerKey->start(5);
+        return;
+    }
+}
+
+void OpenGLWidget::keyReleaseEvent(QKeyEvent* event)
+{
+    QOpenGLWidget::keyReleaseEvent(event);
+    if (!event->isAutoRepeat()) 
+    {
+        pressedKeys.erase(event->key());
+    }
+    if (pressedKeys.empty())
+    {
+        timerKey->stop();
+    }
+}
+
+void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    QOpenGLWidget::mouseMoveEvent(event);
+    //获得鼠标变化坐标
+    static bool firstMouse = true;
+    static float lastX, lastY;
+    if (firstMouse)
+    {
+        lastX = event->x();
+        lastY = event->y();
+        firstMouse = false;
+    }
+    float xoffset = event->x() - lastX;
+    float yoffset = lastY - event->y(); // reversed since y-coordinates go from bottom to top
+
+    lastX = event->x();
+    lastY = event->y();
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+
+}
+
+void OpenGLWidget::wheelEvent(QWheelEvent* event)
+{
+    QOpenGLWidget::wheelEvent(event);
+    camera.ProcessMouseScroll(event->delta() / 120);
 }

@@ -40,6 +40,9 @@ public:
     void cleanAllRects();
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
@@ -51,32 +54,40 @@ private:
     QOpenGLTexture* texture;
     QOpenGLTexture* texture2;
     std::unique_ptr<QTimer> timer;
+
     QOpenGLShaderProgram shaderProgram;
     std::vector<unsigned int> VAOs, VBOs, EBOs;
     std::vector<Vertex> vertices = { // 顶点坐标和颜色
-{
-        +0.5f, +0.5f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // 右上角
-},
-{
-        -0.5f, +0.5f, +0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f // 左上角
-},
-{
-        -0.5f, -0.5f, +0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f // 左下角
-},
-{
-        +0.5f, -0.5f, +0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f // 右下角
-},
+        {+10.0f, +10.0f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // 后右上角
+        {-10.0f, +10.0f, +0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // 后左上角
+        {-10.0f, -10.0f, +0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // 后左下角
+        {+10.0f, -10.0f, +0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // 后右下角
+        {+10.0f, +10.0f, +10.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // 前右上角
+        {-10.0f, +10.0f, +10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // 前左上角
+        {-10.0f, -10.0f, +10.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // 前左下角
+        {+10.0f, -10.0f, +10.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // 前右下角
+
     };
 
     std::vector<unsigned int> indices = {
         0, 1, 2,
-        0, 2, 3
+        0, 2, 3,
+
+        0, 1, 4,
+        1, 4, 5,
+        4,5,6,
+        4,6,7,
+
     };
 
     void loadShaderProgram();
     void loadTexture();
+private:
+    std::set<int> pressedKeys;
+    std::unique_ptr<QTimer> timerKey;
 public slots:
     void onTimeout();
+    void onTimeoutKey();
 signals:
 
 };
