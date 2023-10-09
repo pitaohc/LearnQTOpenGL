@@ -135,6 +135,10 @@ void OpenGLWidget::paintGL()
         //glDrawElements(GL_POINTS, indices.size() , GL_UNSIGNED_INT, 0);
 
     }
+
+    Cube cube;
+    cube.draw();
+
 }
 
 void OpenGLWidget::loadTexture()
