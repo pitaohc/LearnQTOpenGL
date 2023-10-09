@@ -15,6 +15,7 @@
 #include <glm/glm.hpp>
 //自定义库
 #include "camera.h"
+#include "cube.h"
 struct Vertex {
     float position[3];
     float color[3];
