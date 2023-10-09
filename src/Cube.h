@@ -6,6 +6,7 @@
 
 #include <QOpenGLShader>
 #include <QOpenGLTexture>
+#include <QOpenGLContext>
 #include <QOpenGLFunctions_3_3_Core>
 #ifdef _DEBUG
 #include <fmt/format.h>
@@ -32,12 +33,35 @@ namespace CUBE {
     {
     private:
         unsigned int VBO, EBO;
+        std::vector<Vertex> vertexs;
+        std::vector<unsigned int> indices;
+        std::vector<std::unique_ptr<QOpenGLTexture>> textures;
+        QOpenGLShaderProgram shader;
+        QOpenGLFunctions_3_3_Core* gl;
+        void init();
+        void initVertexs();
+        void initShader();
+        void initTextures();
+
+    public:
         glm::vec3 position;
         glm::vec3 rotation;
         glm::vec3 scale;
     public:
         unsigned int VAO;
         void draw();
+        Cube():
+            position(glm::vec3(0.0f, 0.0f, 0.0f)),
+            rotation(glm::vec3(0.0f, 0.0f, 0.0f)),
+            scale(glm::vec3(1.0f, 1.0f, 1.0f)){
+            init();
+        }
+        Cube(const glm::vec3& position,const glm::vec3& rotation, const glm::vec3& scale):
+            position(position),
+            rotation(rotation),
+            scale(scale){
+            init();
+        }
     };
 
 }
