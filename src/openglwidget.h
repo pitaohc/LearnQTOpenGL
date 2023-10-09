@@ -1,24 +1,25 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
-//QT¿â
+//QTåº“
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <qopenglfunctions_3_3_core.h>
 #include <qopenglshaderprogram.h>
 #include <qopengltexture.h>
-//STL¿â
+#include <QCoreApplication>
+//STLåº“
 #include <vector>
 #include <set>
-//GLM¿â
+//GLMåº“
 #include <glm/matrix.hpp>
 #include <glm/glm.hpp>
-//×Ô¶¨Òå¿â
+//è‡ªå®šä¹‰åº“
 #include "camera.h"
 struct Vertex {
     float position[3];
     float color[3];
     float uv[2];
-    Vertex(float x, float y, float z, float r, float g, float b,float u,float v) {
+    Vertex(float x, float y, float z, float r, float g, float b, float u, float v) {
         position[0] = x;
         position[1] = y;
         position[2] = z;
@@ -57,15 +58,15 @@ private:
 
     QOpenGLShaderProgram shaderProgram;
     std::vector<unsigned int> VAOs, VBOs, EBOs;
-    std::vector<Vertex> vertices = { // ¶¥µã×ø±êºÍÑÕÉ«
-        {+10.0f, +10.0f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // ºóÓÒÉÏ½Ç
-        {-10.0f, +10.0f, +0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // ºó×óÉÏ½Ç
-        {-10.0f, -10.0f, +0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // ºó×óÏÂ½Ç
-        {+10.0f, -10.0f, +0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // ºóÓÒÏÂ½Ç
-        {+10.0f, +10.0f, +10.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // Ç°ÓÒÉÏ½Ç
-        {-10.0f, +10.0f, +10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // Ç°×óÉÏ½Ç
-        {-10.0f, -10.0f, +10.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // Ç°×óÏÂ½Ç
-        {+10.0f, -10.0f, +10.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // Ç°ÓÒÏÂ½Ç
+    std::vector<Vertex> vertices = { // é¡¶ç‚¹åæ ‡å’Œé¢œè‰²
+        {+50.0f, +50.0f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // åå³ä¸Šè§’
+        {-50.0f, +50.0f, +0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // åå·¦ä¸Šè§’
+        {-50.0f, -50.0f, +0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // åå·¦ä¸‹è§’
+        {+50.0f, -50.0f, +0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // åå³ä¸‹è§’
+        {+50.0f, +50.0f, +10.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f}, // å‰å³ä¸Šè§’
+        {-50.0f, +50.0f, +10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, // å‰å·¦ä¸Šè§’
+        {-50.0f, -50.0f, +10.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, // å‰å·¦ä¸‹è§’
+        {+50.0f, -50.0f, +10.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f}, // å‰å³ä¸‹è§’
 
     };
 

@@ -22,19 +22,20 @@ const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 0.1f;
 const float SENSITIVITY = 0.1f;
-const float ZOOM = 45.0f;
-
+const float ZOOMDEFAULT = 45.0f;
+const float ZOOMMIN = 30.0f;
+const float ZOOMMAX = 90.0f;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
 public:
     // camera Attributes
-    glm::vec3 Position;
-    glm::vec3 Front;
-    glm::vec3 Up;
-    glm::vec3 Right;
-    glm::vec3 WorldUp;
+    glm::vec3 Position; // 位置
+    glm::vec3 Front;    // 前方
+    glm::vec3 Up;       // 上方
+    glm::vec3 Right;    // 右方
+    glm::vec3 WorldUp;  // 世界上方
     // euler Angles
     float Yaw;
     float Pitch;
@@ -44,7 +45,7 @@ public:
     float Zoom;
 
     // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOMDEFAULT)
     {
         Position = position;
         WorldUp = up;
@@ -53,7 +54,7 @@ public:
         updateCameraVectors();
     }
     // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOMDEFAULT)
     {
         Position = glm::vec3(posX, posY, posZ);
         WorldUp = glm::vec3(upX, upY, upZ);
@@ -72,18 +73,18 @@ public:
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
         float velocity = MovementSpeed * deltaTime;
-        if (direction == FORWARD)
+        if (direction == FORWARD)   //向前
             Position += Front * velocity;
-        if (direction == BACKWARD)
+        if (direction == BACKWARD)  //向后
             Position -= Front * velocity;
-        if (direction == LEFT)
+        if (direction == LEFT)      //向左
             Position -= Right * velocity;
-        if (direction == RIGHT)
+        if (direction == RIGHT)     //向右
             Position += Right * velocity;
-        if (direction == UP)
-            Position += glm::vec3{ 0.0f,3.0f,0.0f } *velocity;
-        if (direction == DOWN)
-            Position -= glm::vec3{ 0.0f,3.0f,0.0f } *velocity;
+        if (direction == UP)        //向上
+            Position += WorldUp * velocity;
+        if (direction == DOWN)      //向下
+            Position -= WorldUp * velocity;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -96,6 +97,7 @@ public:
         Pitch += yoffset;
 
         // make sure that when pitch is out of bounds, screen doesn't get flipped
+        // 保证视角不会倒立
         if (constrainPitch)
         {
             if (Pitch > 89.0f)
@@ -112,10 +114,10 @@ public:
     void ProcessMouseScroll(float yoffset)
     {
         Zoom -= (float)yoffset;
-        if (Zoom < 1.0f)
-            Zoom = 1.0f;
-        if (Zoom > 45.0f)
-            Zoom = 45.0f;
+        if (Zoom < ZOOMMIN)
+            Zoom = ZOOMMIN;
+        if (Zoom > ZOOMMAX)
+            Zoom = ZOOMMAX;
     }
 
 private:

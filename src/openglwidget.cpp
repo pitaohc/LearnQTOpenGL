@@ -14,20 +14,22 @@
 #include <fmt/ranges.h>
 #include <fmt/color.h>
 #endif // _DEBUG
-OpenGLWidget::OpenGLWidget(QWidget* parent) : 
-    QOpenGLWidget(parent),timer(nullptr),texture(nullptr),texture2(nullptr)
+constexpr int FPS = 60;
+OpenGLWidget::OpenGLWidget(QWidget* parent) :
+    QOpenGLWidget(parent), timer(nullptr), texture(nullptr), texture2(nullptr)
 {
     model = glm::mat4(1.0f);
     /*
         注意：camera默认朝向为(0.0f,0.0f,-1.0f)，如果面片z轴坐标大于10会不在视野内。
         并且z值越小，距离越远，面片在屏幕上也越小
     */
-    camera = Camera(glm::vec3(0.0f, 0.0f, 10.0f));
+    camera = Camera(glm::vec3(0.0f, 0.0f, 10.0f)); //初始化相机位置
+
     setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
 
     timer = std::make_unique<QTimer>(this);//timer只负责触发onTimeout()函数，不负责获取时间
     connect(timer.get(), SIGNAL(timeout()), this, SLOT(onTimeout()));
-    timer->start(1000 / 256);
+    timer->start(1000 / FPS);
 
     timerKey = std::make_unique<QTimer>(this);//timer只负责触发onTimeout()函数，不负责获取时间
     connect(timerKey.get(), SIGNAL(timeout()), this, SLOT(onTimeoutKey()));
@@ -105,10 +107,10 @@ void OpenGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgram.bind();
-    
-    glUniformMatrix4fv(shaderProgram.uniformLocation("model") , 1, GL_FALSE, &model[0][0]);
-    
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 100.0f);
+
+    glUniformMatrix4fv(shaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 1000.0f);
     glm::mat4 view = camera.GetViewMatrix();
     glUniformMatrix4fv(shaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(shaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
@@ -128,7 +130,7 @@ void OpenGLWidget::paintGL()
     for (size_t i = 0; i < VAOs.size(); i++)
     {
         glBindVertexArray(VAOs[i]);
-        glDrawElements(GL_TRIANGLES, indices.size() , GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_POINTS, indices.size() , GL_UNSIGNED_INT, 0);
 
     }
@@ -137,14 +139,14 @@ void OpenGLWidget::paintGL()
 void OpenGLWidget::loadTexture()
 {
     texture = new QOpenGLTexture(
-        QImage("D:/DATA/Project/QT/LearnQTOpenGL/resources/texture.png").mirrored());
+        QImage("../resources/texture.png").mirrored());
     //输出texture的尺寸信息
 #ifdef _DEBUG
     fmt::print(fmt::fg(fmt::color::green), "load texture successfully.");
     fmt::print(" The shape is {}x{}px.\n", texture->width(), texture->height());
 #endif // _DEBUG
     texture2 = new QOpenGLTexture(
-        QImage("D:/DATA/Project/QT/LearnQTOpenGL/resources/texture2.png").mirrored());
+        QImage("../resources/texture2.png").mirrored());
     //输出texture的尺寸信息
 #ifdef _DEBUG
     fmt::print(fmt::fg(fmt::color::green), "load texture2 successfully.");
@@ -185,9 +187,10 @@ void OpenGLWidget::onTimeoutKey()
             camera.ProcessKeyboard(DOWN, deltaTime);
             break;
         case Qt::Key_G:
-            camera.Position = glm::vec3(0.0f,0.0f,10.0f);
+            camera.Position = glm::vec3(0.0f, 0.0f, 10.0f);
+            break;
         case Qt::Key_Escape:
-            //TODO 处理退出键
+            QCoreApplication::quit();
             break;
         default:
             break;
@@ -208,7 +211,7 @@ void OpenGLWidget::loadShaderProgram()
     //success = shaderProgram.addCacheableShaderFromSourceCode(
     //    QOpenGLShader::Vertex, vertexShaderSource);
     if (!success) {
-        qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" 
+        qDebug() << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
             << shaderProgram.log();
     }
     success = shaderProgram.addShaderFromSourceFile(
@@ -219,7 +222,7 @@ void OpenGLWidget::loadShaderProgram()
     }
     success = shaderProgram.link();
     if (!success) {
-        qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" 
+        qDebug() << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
             << shaderProgram.log();
     }
 
@@ -236,7 +239,7 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     makeCurrent();
     unsigned int VAO, VBO, EBO;
     std::vector<Vertex> vertices = this->vertices;
-    
+
     for (size_t i = 0; i < vertices.size(); i++)
     {
         vertices[i].position[0] += dx;
@@ -247,7 +250,7 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    
+
     VAOs.emplace_back(VAO);
     VBOs.emplace_back(VBO);
     EBOs.emplace_back(EBO);
@@ -256,18 +259,18 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type), 
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(decltype(vertices)::value_type),
         vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type), 
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type),
         indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type),
         (void*)(offsetof(Vertex, position)));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type),
         (void*)(offsetof(Vertex, color)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type), 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(vertices)::value_type),
         (void*)(offsetof(Vertex, uv)));
     glEnableVertexAttribArray(2);
 
@@ -278,7 +281,7 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     update();
 #ifdef _DEBUG
     fmt::print(fmt::fg(fmt::color::green), "VAO, VBO, EBO Created Successfully!!!\n");
-    fmt::print("{}, {}, {}\n", VAOs, VBOs,EBOs);
+    fmt::print("{}, {}, {}\n", VAOs, VBOs, EBOs);
 
 #endif // _DEBUG
 
@@ -292,11 +295,11 @@ void OpenGLWidget::cleanAllRects()
 #endif // _DEBUG
 
     makeCurrent();
-    glDeleteVertexArrays(VAOs.size(), VAOs.data());   
-    VAOs.clear();                                     
-    glDeleteBuffers(VBOs.size(), VBOs.data());        
-    VBOs.clear();                                     
-    glDeleteBuffers(EBOs.size(), EBOs.data());        
+    glDeleteVertexArrays(VAOs.size(), VAOs.data());
+    VAOs.clear();
+    glDeleteBuffers(VBOs.size(), VBOs.data());
+    VBOs.clear();
+    glDeleteBuffers(EBOs.size(), EBOs.data());
     EBOs.clear();
     doneCurrent();
     update();
@@ -311,19 +314,7 @@ void OpenGLWidget::onTimeout() {
 #ifdef _DEBUG
     fmt::print("Tick Time: {}ms\n", deltaTime);
 #endif // _DEBUG
-
-
-    //float theta = msesecondTime / 1000.0f * 2 * 3.1415926; // 0~2pi 弧度
-    //glm::mat4 matrix = glm::mat4(1.0f);
-    ////平移0.25
-    //matrix = glm::translate(matrix, glm::vec3(0.5f, 0.5f, 0.0f)) * matrix;
-    //matrix = glm::rotate(glm::mat4(1.0f), theta, glm::vec3(0.0f, 0.0f, 1.0f)) * matrix;
-    //matrix = glm::translate(matrix, glm::vec3(-0.5f, -0.5f, 0.0f)) * matrix;
-
-    //model = matrix;
-
     update();
-
 }
 
 /*
@@ -349,7 +340,7 @@ void OpenGLWidget::keyPressEvent(QKeyEvent* event)
 void OpenGLWidget::keyReleaseEvent(QKeyEvent* event)
 {
     QOpenGLWidget::keyReleaseEvent(event);
-    if (!event->isAutoRepeat()) 
+    if (!event->isAutoRepeat())
     {
         pressedKeys.erase(event->key());
     }
@@ -371,6 +362,12 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
         lastY = event->y();
         firstMouse = false;
     }
+#ifdef _DEBUG
+    fmt::print(
+        "last pos: ({},{}), current pos: ({},{})\n",
+        lastX, lastY, event->x(), event->y());
+#endif // _DEBUG
+
     float xoffset = event->x() - lastX;
     float yoffset = lastY - event->y(); // reversed since y-coordinates go from bottom to top
 
