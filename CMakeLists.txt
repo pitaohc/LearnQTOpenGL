@@ -62,3 +62,12 @@ target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
 target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+
+# 判断是否是visual studio
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    message("Generating Visual Studio project")
+    # 设置visual studio的启动项目
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+else()
+    message("Not generating Visual Studio project")
+endif()
