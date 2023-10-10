@@ -1,8 +1,13 @@
 #include "cube.h"
 
 using ShaderProgram = QOpenGLShaderProgram;
-void CUBE::Cube::init()
+using namespace CUBE;
+void Cube::init()
 {
+    /*
+    不能在initializeOpenGLFunctions()调用前调用，会导致错误，因此将init函数与构造函数分开，
+    这样允许声明在类中
+    */
     QOpenGLContext* currentContext = QOpenGLContext::currentContext();
     gl = currentContext->versionFunctions<QOpenGLFunctions_3_3_Core>();
 
@@ -11,25 +16,47 @@ void CUBE::Cube::init()
     initTextures();
 }
 
-void CUBE::Cube::initVertexs()
+void Cube::initVertexs()
 {
     vertexs = {
-        { 1.0f, 1.0f, 1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ����ǰ 0
-        { 1.0f, 1.0f,-1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ���Ϻ� 1
-        { 1.0f,-1.0f,-1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ���º� 2
-        { 1.0f,-1.0f, 1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ����ǰ 3
-        {-1.0f, 1.0f, 1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ����ǰ 4
-        {-1.0f, 1.0f,-1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ���Ϻ� 5
-        {-1.0f,-1.0f,-1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ���º� 6
-        {-1.0f,-1.0f, 1.0f,1.0f,1.0f,1.0f,1.0f,1.0f}, // ����ǰ 7
+        //前
+        { 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, //前右上
+        {-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, //前左上
+        {-0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, //前左下
+        { 0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, //前右下
+        //后
+        { 0.5f, 0.5f,-0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f}, //后右上
+        {-0.5f, 0.5f,-0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f}, //后左上
+        {-0.5f,-0.5f,-0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f}, //后左下
+        { 0.5f,-0.5f,-0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f}, //后右下
+        //左
+        {-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前左上
+        {-0.5f,-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前左下
+        {-0.5f,-0.5f,-0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后左下
+        {-0.5f, 0.5f,-0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后左上
+        //右
+        { 0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //前右上
+        { 0.5f,-0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //前右下
+        { 0.5f,-0.5f,-0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //后右下
+        { 0.5f, 0.5f,-0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //后右上
+        //上
+        { 0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //前右上
+        {-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //前左上
+        {-0.5f, 0.5f,-0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //后左上
+        { 0.5f, 0.5f,-0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //后右上
+        //下
+        {-0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前左下
+        { 0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前右下
+        {-0.5f,-0.5f,-0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后左下
+        { 0.5f,-0.5f,-0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后右下
     };
     indices = {
-        0,4,3, 0,4,7,// ǰ
-        1,6,2, 1,6,5,// ��
-        4,6,5, 4,6,7,// ��
-        0,2,1, 0,2,3,// ��
-        0,5,1, 0,5,4,// ��
-        2,7,3, 2,7,6,// ��
+        0,1,2 , 0,2,3, //前
+        6,5,4 , 7,6,4, //后
+        10,9,8, 11,10,8, //左
+        12,13,14, 12,14,15, //右
+        18,17,16, 19,18,16, //上
+        22,21,20, 21,22,23, //下
     };
 
     gl->glGenVertexArrays(1, &VAO);
@@ -45,15 +72,15 @@ void CUBE::Cube::initVertexs()
     gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(decltype(indices)::value_type),
         indices.data(), GL_STATIC_DRAW);
 
-    // ��������
+    // 顶点属性
     gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertexs)::value_type),
         (void*)(offsetof(Vertex, position)));
     gl->glEnableVertexAttribArray(0);
-    // ��ɫ����
+    // 颜色属性
     gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(decltype(vertexs)::value_type),
         (void*)(offsetof(Vertex, color)));
     gl->glEnableVertexAttribArray(1);
-    // ������������
+    // 纹理坐标属性
     gl->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(decltype(vertexs)::value_type),
         (void*)(offsetof(Vertex, uv)));
     gl->glEnableVertexAttribArray(2);
@@ -70,7 +97,7 @@ void CUBE::Cube::initVertexs()
 
 }
 
-void CUBE::Cube::initShader()
+void Cube::initShader()
 {
     int success;
     char infoLog[512];
@@ -106,18 +133,52 @@ void CUBE::Cube::initShader()
 
 }
 
-void CUBE::Cube::initTextures()
+void Cube::initTextures()
 {
-
-    textures.emplace_back(QOpenGLTexture(
+    textures.emplace_back(std::make_unique<QOpenGLTexture>(
         QImage("../resources/texture.png").mirrored()));
-    textures.emplace_back(QOpenGLTexture(
+    textures.emplace_back(std::make_unique<QOpenGLTexture>(
         QImage("../resources/texture2.png").mirrored()));
 }
 
-void CUBE::Cube::draw()
+void Cube::updateModel()
 {
+    model = glm::mat4(1.0f);
+    //根据rotate旋转model矩阵
+    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // 绕x轴旋转
+    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // 绕y轴旋转
+    model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f)); // 绕z轴旋转
+    //根据scale缩放model矩阵
+    model = glm::scale(model, scale);
+    //根据position移动model矩阵
+    model = glm::translate(model, position);
+}
 
+void Cube::draw()
+{
+    gl->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    shader.bind();
+    updateModel();
 
+    gl->glUniformMatrix4fv(shader.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    gl->glUniformMatrix4fv(shader.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    gl->glUniformMatrix4fv(shader.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+    textures[0]->bind(0);
+    textures[0]->generateMipMaps();
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    textures[1]->bind(1);
+    textures[1]->generateMipMaps();
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    gl->glBindVertexArray(VAO);
+    gl->glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    gl->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 

@@ -6,6 +6,7 @@ uniform sampler2D ourTexture;
 uniform sampler2D ourTexture2;
 void main()                                  
 {                   
-	FragColor = mix(texture(ourTexture, outTexCord),texture(ourTexture2, outTexCord),1.0);
-	//0´ú±íÈ«ÎªµÚÒ»¸öÊäÈë£¬1´ú±íÈ«ÎªµÚ¶ş¸öÊäÈë
+	//FragColor = mix(texture(ourTexture, outTexCord),texture(ourTexture2, outTexCord),1.0);
+	FragColor = vec4(ourColor,1.0f);
+	//0ä»£è¡¨å…¨ä¸ºç¬¬ä¸€ä¸ªè¾“å…¥ï¼Œ1ä»£è¡¨å…¨ä¸ºç¬¬äºŒä¸ªè¾“å…¥
 } 
