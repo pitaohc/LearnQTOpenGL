@@ -22,16 +22,22 @@ find_package(Eigen3 CONFIG REQUIRED)
 set(UI_DIRS ui)
 file(GLOB_RECURSE UI_FILES ${UI_DIRS}/*.ui)
 qt5_wrap_ui(ui_FILES ${UI_FILES})
-message("UI Files:")
-message(${UI_FILES})
+message("UI 文件:")
+# 逐行输出UI_FILES
+foreach(FILE ${UI_FILES})
+	message(${FILE})
+endforeach()
 # 将ui文件添加到筛选器
 source_group("Form Files" FILES ${UI_FILES})
 #################################################
 # 添加shader文件
 set(SHADER_DIRS shader)
 file(GLOB_RECURSE SHADER_FILES ${SHADER_DIRS}/*.frag ${SHADER_DIRS}/*.vert ${SHADER_DIRS}/*.vs ${SHADER_DIRS}/*.fs)
-message("SHADER Files:")
-message(${SHADER_FILES})
+message("SHADER 文件:")
+# 逐行输出SHADER_FILES
+foreach(FILE ${SHADER_FILES})
+	message(${FILE})
+endforeach()
 # 将shader文件添加到筛选器
 # Note: 只有在 add_executable() 中的文件才会被 source_group 分组. 如果你发现有些文件没有被正确分组, 应该首先确认这些文件是否出现在 add_executable() 的 [source-x] 列表中.
 source_group("Shader Files" FILES ${SHADER_FILES}) 
@@ -42,13 +48,19 @@ set(HEADER_DIRS src)
 include_directories(${HEADER_DIRS})
 # 查找源文件并将它们添加到可执行文件
 file(GLOB_RECURSE HEADER_FILES ${HEADER_DIRS}/*.h)
-message("Header 内容:")
-message(${HEADER_FILES})
+message("Header 文件:")
+# 逐行输出HEADER_FILES
+foreach(FILE ${HEADER_FILES})
+	message(${FILE})
+endforeach()
 #################################################
 set(SOURCE_DIR src)
 file(GLOB SOURCES ${SOURCE_DIR}/*.cpp)
-message("Sources 内容:")
-message(${SOURCES})
+message("Sources 文件:")
+# 逐行输出SOURCES
+foreach(FILE ${SOURCES})
+	message(${FILE})
+endforeach()
 #################################################
 # 配置release版本的CMAKE_EXE_LINKER_FLAGS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
@@ -60,14 +72,19 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADER_FILES} ${ui_FILES} ${SHADER_F
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets )
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
-target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
-target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
+
 
 # 判断是否是visual studio
-if (CMAKE_GENERATOR MATCHES "Visual Studio")
+if (MSVC)
     message("Generating Visual Studio project")
+    # 设置项目编码方式，MSVC在编译时会默认以UTF-8编码读取源文件，并将文本内容以UTF-8编码保存在exe或者dll可执行文件内，这是最关键的一点。
+    target_compile_options(${PROJECT_NAME} PRIVATE "/utf-8")
+    # 设置项目的字符集，这里设置为Unicode字符集，也就是说，项目中的所有字符串都是Unicode编码的。
+    target_compile_definitions(${PROJECT_NAME} PRIVATE 
+    "_UNICODE"
+    "UNICODE")
     # 设置visual studio的启动项目
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 else()
     message("Not generating Visual Studio project")
 endif()
