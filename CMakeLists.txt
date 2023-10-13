@@ -5,8 +5,9 @@ project(LearnQTOpenGL LANGUAGES CXX)
 # 设置c++标准 17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOMOC ON) # 设置自动生成moc文件,AUTOMOC打开可以省去QT5_WRAP_CPP命令
+# set(CMAKE_AUTOUIC ON) # 设置自动生成ui.h文件,AUTOUIC打开可以省去QT5_WRAP_UI命令
+set(CMAKE_AUTORCC ON) # 【optional】设置自动处理.qrc文件
 
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -18,6 +19,17 @@ find_package(assimp CONFIG REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 #################################################
+# 添加QT资源管理文件
+set(RES_DIRS resources)
+file(GLOB_RECURSE RES_DIRS ${RES_DIRS}/*.qrc)
+message("QT 资源管理文件:")
+# 逐行输出QT资源管理文件
+foreach(FILE ${RES_DIRS})
+    message(${FILE})
+endforeach()
+# 将QT资源管理文件添加到筛选器
+source_group("Resource Files" FILES ${RES_DIRS})
+#################################################
 # 添加ui文件
 set(UI_DIRS ui)
 file(GLOB_RECURSE UI_FILES ${UI_DIRS}/*.ui)
@@ -25,7 +37,7 @@ qt5_wrap_ui(ui_FILES ${UI_FILES})
 message("UI 文件:")
 # 逐行输出UI_FILES
 foreach(FILE ${UI_FILES})
-	message(${FILE})
+    message(${FILE})
 endforeach()
 # 将ui文件添加到筛选器
 source_group("Form Files" FILES ${UI_FILES})
@@ -36,7 +48,7 @@ file(GLOB_RECURSE SHADER_FILES ${SHADER_DIRS}/*.frag ${SHADER_DIRS}/*.vert ${SHA
 message("SHADER 文件:")
 # 逐行输出SHADER_FILES
 foreach(FILE ${SHADER_FILES})
-	message(${FILE})
+    message(${FILE})
 endforeach()
 # 将shader文件添加到筛选器
 # Note: 只有在 add_executable() 中的文件才会被 source_group 分组. 如果你发现有些文件没有被正确分组, 应该首先确认这些文件是否出现在 add_executable() 的 [source-x] 列表中.
@@ -51,7 +63,7 @@ file(GLOB_RECURSE HEADER_FILES ${HEADER_DIRS}/*.h)
 message("Header 文件:")
 # 逐行输出HEADER_FILES
 foreach(FILE ${HEADER_FILES})
-	message(${FILE})
+    message(${FILE})
 endforeach()
 #################################################
 set(SOURCE_DIR src)
@@ -59,7 +71,7 @@ file(GLOB SOURCES ${SOURCE_DIR}/*.cpp)
 message("Sources 文件:")
 # 逐行输出SOURCES
 foreach(FILE ${SOURCES})
-	message(${FILE})
+    message(${FILE})
 endforeach()
 #################################################
 # 配置release版本的CMAKE_EXE_LINKER_FLAGS
@@ -68,7 +80,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /SUBSYSTEM:CONSOLE /ENTRY:mainCRTStartup")
 
 #################################################
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADER_FILES} ${ui_FILES} ${SHADER_FILES})
+add_executable(${PROJECT_NAME} 
+${SOURCES} 
+${HEADER_FILES} 
+${UI_FILES} 
+${SHADER_FILES})
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets )
 target_link_libraries(${PROJECT_NAME} fmt::fmt)
 target_link_libraries(${PROJECT_NAME} assimp::assimp)
