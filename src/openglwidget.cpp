@@ -15,6 +15,8 @@
 #include <fmt/color.h>
 #endif // _DEBUG
 constexpr int FPS = 60;
+constexpr glm::vec3 POSITIONDEFAULT(0.0f, 0.0f, 100.0f);
+QVector3D lightColor(0.5f, 0.5f, 1.0f);
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr), texture(nullptr), texture2(nullptr)
 {
@@ -23,7 +25,7 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) :
         注意：camera默认朝向为(0.0f,0.0f,-1.0f)，如果面片z轴坐标大于10会不在视野内。
         并且z值越小，距离越远，面片在屏幕上也越小
     */
-    camera = Camera(glm::vec3(0.0f, 0.0f, 10.0f)); //初始化相机位置
+    camera = Camera(POSITIONDEFAULT); //初始化相机位置
 
     setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
 
@@ -84,6 +86,9 @@ OpenGLWidget::~OpenGLWidget()
 void OpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+
+    //开启面剔除
+    glEnable(GL_CULL_FACE);
 
     // 设置渲染方式
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -187,7 +192,7 @@ void OpenGLWidget::onTimeoutKey()
             camera.ProcessKeyboard(DOWN, deltaTime);
             break;
         case Qt::Key_G:
-            camera.Position = glm::vec3(0.0f, 0.0f, 10.0f);
+            camera.Position = POSITIONDEFAULT;
             break;
         case Qt::Key_Escape:
             QCoreApplication::quit();
@@ -232,6 +237,7 @@ void OpenGLWidget::loadShaderProgram()
     shaderProgram.bind();
     shaderProgram.setUniformValue("ourTexture", 0);
     shaderProgram.setUniformValue("ourTexture2", 1);
+    shaderProgram.setUniformValue("lightColor", QVector3D(1.0f, 1.0f, 1.0f));
 }
 
 void OpenGLWidget::setNewRect(float dx, float dy, float dz)
