@@ -14,12 +14,12 @@
 #include <fmt/ranges.h>
 #include <fmt/color.h>
 #endif // _DEBUG
-constexpr int FPS = 60;
+constexpr int FPS = 144;
 constexpr glm::vec3 POSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
 {
-    model = glm::mat4(1.0f);
+
     /*
         注意：camera默认朝向为(0.0f,0.0f,-1.0f)，如果面片z轴坐标大于10会不在视野内。
         并且z值越小，距离越远，面片在屏幕上也越小
@@ -52,14 +52,28 @@ OpenGLWidget::~OpenGLWidget()
 void OpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-
+    //开启深度测试
+    glEnable(GL_DEPTH_TEST);
     // 设置渲染方式
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
     glEnable(GL_CULL_FACE); // 开启面剔除
 
-    cube.init();
+    cubes.push_back(Cube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f)));
+    cubes.push_back(Cube(glm::vec3(40.0f, 40.0f, 10.0f), glm::vec3(30.0f, 45.0f, 60.0f), glm::vec3(20.0f, 20.0f, 20.0f)));
+
+
+    int success = false;
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/cube.vert");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/cube.frag");
+    success = shaderProgram.link();
+    if (!success)
+    {
+        qCritical() << "shaderProgram link failed!" << endl
+            << shaderProgram.log() << endl;
+    }
+
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -74,12 +88,20 @@ void OpenGLWidget::paintGL()
 {
     glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 1000.0f);
-    glm::mat4 view = camera.GetViewMatrix();
+    float angle = deltaTime / 3000.0f * 360.0f;
+    for (auto& cube : cubes)
+    {
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 1000.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        cube.rotation.y += angle;
+        glm::mat4 model = cube.getModel();
 
-    cube.projection = projection;
-    cube.view = view;
-    cube.draw();
+        shaderProgram.bind();
+        glUniformMatrix4fv(shaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(shaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(shaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+        cube.draw(shaderProgram);
+    }
 
 }
 
@@ -132,23 +154,31 @@ void OpenGLWidget::onTimeoutKey()
 
 void OpenGLWidget::setNewRect(float dx, float dy, float dz)
 {
-
+    float x, y, z;
+    x = rand() % 100 - 50;
+    y = rand() % 100 - 50;
+    z = rand() % 100 - 50;
+    float roll, yaw, pitch;
+    pitch = (float)(rand() % 3600) / 10.0f - 180;
+    yaw = (float)(rand() % 3600) / 10.0f - 180;
+    roll = (float)(rand() % 3600) / 10.0f - 180;
+    cubes.push_back(Cube(glm::vec3(x, y, z), glm::vec3(pitch, yaw, roll), glm::vec3(10.0f, 10.0f, 10.0f)));
 
 }
 
 void OpenGLWidget::cleanAllRects()
 {
-
+    cubes.clear();
 }
 
 void OpenGLWidget::onTimeout() {
     ////获取当前毫秒数
     int currentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     static int lastTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    deltaTime = (currentTime * 1.0f - lastTime);
+    deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 #ifdef _DEBUG
-    fmt::print("Tick Time: {}ms\n", deltaTime);
+    fmt::print("FPS = {}, Tick Time: {}ms, Current Time: {}ms\n",(int)(1000.0f / deltaTime), deltaTime, currentTime);
 #endif // _DEBUG
     update();
 }

@@ -34,11 +34,11 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
-    Cube cube;
+
+    std::vector<Cube> cubes;
+    QOpenGLShaderProgram shaderProgram;
     Camera camera;
     float deltaTime = 0.0f;
-
-    glm::mat4 model;
 
     std::unique_ptr<QTimer> timer;
 
