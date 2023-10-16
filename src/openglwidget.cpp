@@ -121,6 +121,12 @@ void OpenGLWidget::paintGL()
         glUniformMatrix4fv(cubeSaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
         cube.draw(cubeSaderProgram);
     }
+
+    float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
+
+    float newy = sin(time/1000) * 50 - 25;
+    lightCube.position.y = newy;
+
     glm::mat4 model = lightCube.getModel();
     lightShaderProgram.bind();
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
