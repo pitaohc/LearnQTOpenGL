@@ -5,10 +5,10 @@ void Cube::create()
 {
     vertexs = {
         //前
-        Vertex(glm::vec3(+0.5f, 0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(1.0f,1.0f)),//前右上
-        Vertex(glm::vec3(-0.5f, 0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(0.0f,1.0f)),//前左上
-        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(0.0f,0.0f)),//前左下
-        Vertex(glm::vec3(+0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 0.0f, 0.0f),glm::vec2(1.0f,0.0f)),//前右下
+        Vertex(glm::vec3(+0.5f, 0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(1.0f,1.0f)),//前右上
+        Vertex(glm::vec3(-0.5f, 0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(0.0f,1.0f)),//前左上
+        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(0.0f,0.0f)),//前左下
+        Vertex(glm::vec3(+0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(1.0f,0.0f)),//前右下
         //后
         Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(0.0f,1.0f)),//后左上
         Vertex(glm::vec3(+0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(1.0f,1.0f)),//后右上
@@ -144,6 +144,6 @@ glm::mat4 CUBE::Cube::getModel()
     transMat = glm::translate(transMat, position);
     //scale
     scaleMat = glm::scale(scaleMat, scale);
-    return transMat  * scaleMat * rotatMat;
+    return transMat * rotatMat * scaleMat;
 }
 

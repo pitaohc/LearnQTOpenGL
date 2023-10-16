@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <QKeyEvent>
 #include <QtCore/QTimer>
@@ -15,7 +16,10 @@
 #include <fmt/color.h>
 #endif // _DEBUG
 constexpr int FPS = 144;
-constexpr glm::vec3 POSITIONDEFAULT(0.0f, 0.0f, 100.0f);
+constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
+constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
+constexpr glm::vec3 lightColor(1,1,1); //rgb(101, 63, 148)
+//constexpr glm::vec3 lightColor(101.0f/256.0f, 63.0f / 256.0f, 148.0f / 256.0f); //rgb(101, 63, 148)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
 {
@@ -23,7 +27,7 @@ OpenGLWidget::OpenGLWidget(QWidget* parent) :
         注意：camera默认朝向为(0.0f,0.0f,-1.0f)，如果面片z轴坐标大于10会不在视野内。
         并且z值越小，距离越远，面片在屏幕上也越小
     */
-    camera = Camera(POSITIONDEFAULT); //初始化相机位置
+    camera = Camera(CAMERAPOSITIONDEFAULT); //初始化相机位置
 
     setFocusPolicy(Qt::StrongFocus); //设置焦点策略,否则键盘事件不响应
 
@@ -59,20 +63,33 @@ void OpenGLWidget::initializeGL()
 
     glEnable(GL_CULL_FACE); // 开启面剔除
 
+    //设置lightCube位置
+    lightCube.position = LIGHTPOSITIONDEFAULT;
+    lightCube.scale = { 5.0f,5.0f,5.0f };
+
+
     cubes.push_back(Cube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f)));
-    cubes.push_back(Cube(glm::vec3(40.0f, 40.0f, 10.0f), glm::vec3(30.0f, 45.0f, 60.0f), glm::vec3(20.0f, 20.0f, 20.0f)));
+    cubes.push_back(Cube(glm::vec3(40.0f, -40.0f, 10.0f), glm::vec3(0, 45.0f, 0), glm::vec3(20.0f, 20.0f, 20.0f)));
 
 
     int success = false;
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/cube.vert");
-    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/cube.frag");
-    success = shaderProgram.link();
+    cubeSaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/cube.vert");
+    cubeSaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/cube.frag");
+    success = cubeSaderProgram.link();
     if (!success)
     {
         qCritical() << "shaderProgram link failed!" << endl
-            << shaderProgram.log() << endl;
+            << cubeSaderProgram.log() << endl;
     }
-
+    lightShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/light.vert");
+    lightShaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/light.frag");
+    success = lightShaderProgram.link();
+    if (!success)
+    {
+        qCritical() << "shaderProgram link failed!" << endl
+            << lightShaderProgram.log() << endl;
+    }
+  
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -88,20 +105,29 @@ void OpenGLWidget::paintGL()
     glClearColor(0.5f, 0.6f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     float angle = deltaTime / 3000.0f * 360.0f;
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 1000.0f);
+    glm::mat4 view = camera.GetViewMatrix();
+    cubeSaderProgram.bind();
+    glUniformMatrix4fv(cubeSaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(cubeSaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x,lightColor.y,lightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("lightPos"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
     for (auto& cube : cubes)
     {
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)this->width() / (float)this->height(), 0.1f, 1000.0f);
-        glm::mat4 view = camera.GetViewMatrix();
         cube.rotation.y += angle;
         glm::mat4 model = cube.getModel();
-
-        shaderProgram.bind();
-        glUniformMatrix4fv(shaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
-        glUniformMatrix4fv(shaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
-        glUniformMatrix4fv(shaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-        cube.draw(shaderProgram);
+        cubeSaderProgram.bind();
+        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+        cube.draw(cubeSaderProgram);
     }
-
+    glm::mat4 model = lightCube.getModel();
+    lightShaderProgram.bind();
+    glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(lightShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+    glUniform3f(lightShaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
+    lightCube.draw(lightShaderProgram);
 }
 
 
@@ -138,7 +164,7 @@ void OpenGLWidget::onTimeoutKey()
             camera.ProcessKeyboard(DOWN, deltaTime);
             break;
         case Qt::Key_G:
-            camera.Position = POSITIONDEFAULT;
+            camera.Position = CAMERAPOSITIONDEFAULT;
             break;
         case Qt::Key_Escape:
             QCoreApplication::quit();
@@ -174,6 +200,7 @@ void OpenGLWidget::onTimeout() {
     ////获取当前毫秒数
     int currentTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
     static int lastTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    if (currentTime == lastTime) return;//delta时间为0时跳过
     deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 #ifdef _DEBUG
@@ -220,7 +247,6 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
     QOpenGLWidget::mouseMoveEvent(event);
     //获得鼠标变化坐标
     static bool firstMouse = true;
-    static float lastX, lastY;
     if (firstMouse)
     {
         lastX = event->x();
@@ -241,6 +267,13 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent* event)
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 
+}
+
+void OpenGLWidget::mousePressEvent(QMouseEvent* event)
+{
+    QOpenGLWidget::mousePressEvent(event);
+    lastX = event->x();
+    lastY = event->y();
 }
 
 void OpenGLWidget::wheelEvent(QWheelEvent* event)
