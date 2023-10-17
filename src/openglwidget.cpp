@@ -18,7 +18,7 @@
 constexpr int FPS = 144;
 constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
-constexpr glm::vec3 lightColor(1,1,1); //rgb(101, 63, 148)
+constexpr glm::vec3 lightColor(1, 1, 1); //rgb(101, 63, 148)
 //constexpr glm::vec3 lightColor(101.0f/256.0f, 63.0f / 256.0f, 148.0f / 256.0f); //rgb(101, 63, 148)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
@@ -89,7 +89,20 @@ void OpenGLWidget::initializeGL()
         qCritical() << "shaderProgram link failed!" << endl
             << lightShaderProgram.log() << endl;
     }
-  
+
+    mesh = MESH::testBuildMesh();
+    meshShaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/mesh.vert");
+    meshShaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/mesh.frag");
+    success = lightShaderProgram.link();
+    if (!success)
+    {
+        qCritical() << "shaderProgram link failed!" << endl
+            << lightShaderProgram.log() << endl;
+    }
+    texture = new QOpenGLTexture(QImage("../resources/texture.png").mirrored());
+#ifdef _DEBUG
+    fmt::print("INFO: texture size: {}x{}\n", texture->width(), texture->height());
+#endif
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -110,7 +123,7 @@ void OpenGLWidget::paintGL()
     cubeSaderProgram.bind();
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x,lightColor.y,lightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("lightPos"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
     glUniform3f(cubeSaderProgram.uniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
     for (auto& cube : cubes)
@@ -124,7 +137,7 @@ void OpenGLWidget::paintGL()
 
     float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
 
-    float newy = sin(time/1000) * 50 - 25;
+    float newy = sin(time / 1000) * 50 - 25;
     lightCube.position.y = newy;
 
     glm::mat4 model = lightCube.getModel();
@@ -134,6 +147,19 @@ void OpenGLWidget::paintGL()
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
     glUniform3f(lightShaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
     lightCube.draw(lightShaderProgram);
+
+    model = glm::mat4(1.0f);
+    model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+    meshShaderProgram.bind();
+    glUniformMatrix4fv(meshShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(meshShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(meshShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    mesh->draw(meshShaderProgram);
 }
 
 

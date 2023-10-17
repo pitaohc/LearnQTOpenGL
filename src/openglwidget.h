@@ -16,7 +16,7 @@
 //自定义库
 #include "camera.h"
 #include "cube.h"
-
+#include "mesh.h"
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -35,11 +35,14 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
+    Mesh* mesh;
+    QOpenGLTexture* texture;
     float lastX, lastY;
     Cube lightCube;
     std::vector<Cube> cubes;
     QOpenGLShaderProgram lightShaderProgram;
     QOpenGLShaderProgram cubeSaderProgram;
+    QOpenGLShaderProgram meshShaderProgram;
     Camera camera;
     float deltaTime = 0.0f;
 
