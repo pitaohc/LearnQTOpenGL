@@ -122,10 +122,14 @@ void OpenGLWidget::paintGL()
     texture_spec->bind(1);
     glUniform1f(cubeSaderProgram.uniformLocation("material.shininess"), 128.0f);
 
+
+    glUniform1f(cubeSaderProgram.uniformLocation("light.constant"), 1.0);
+    glUniform1f(cubeSaderProgram.uniformLocation("light.linear"), 0.002);
+    glUniform1f(cubeSaderProgram.uniformLocation("light.quadratic"), 0.0019);
     glUniform3f(cubeSaderProgram.uniformLocation("light.ambient"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("light.diffuse"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("light.specular"), lightColor.x, lightColor.y, lightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("light.direction"), 0.0f, 50.0f, -100.0f); //平行光
+    glUniform3f(cubeSaderProgram.uniformLocation("light.position"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
 
     for (auto& cube : cubes)
     {
