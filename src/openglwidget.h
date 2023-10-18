@@ -37,6 +37,8 @@ protected:
 private:
     float lastX, lastY;
     Cube lightCube;
+    QOpenGLTexture* texture;
+    QOpenGLTexture* texture_spec;
     std::vector<Cube> cubes;
     QOpenGLShaderProgram lightShaderProgram;
     QOpenGLShaderProgram cubeSaderProgram;
