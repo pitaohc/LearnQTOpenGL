@@ -18,8 +18,8 @@
 constexpr int FPS = 144;
 constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
-constexpr glm::vec3 lightColor(1,1,1); //rgb(101, 63, 148)
-//constexpr glm::vec3 lightColor(101.0f/256.0f, 63.0f / 256.0f, 148.0f / 256.0f); //rgb(101, 63, 148)
+//constexpr glm::vec3 lightColor(1, 1, 1); //rgb(101, 63, 148)
+constexpr glm::vec3 lightColor(46.0f / 256.0f, 255.0f / 256.0f, 154.0f / 256.0f); //rgb(101, 63, 148)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
 {
@@ -89,7 +89,7 @@ void OpenGLWidget::initializeGL()
         qCritical() << "shaderProgram link failed!" << endl
             << lightShaderProgram.log() << endl;
     }
-  
+
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -110,9 +110,19 @@ void OpenGLWidget::paintGL()
     cubeSaderProgram.bind();
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x,lightColor.y,lightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("lightPos"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
     glUniform3f(cubeSaderProgram.uniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+
+    glUniform3f(cubeSaderProgram.uniformLocation("material.ambient"), 1.0f, 0.5f, 0.31f);
+    glUniform3f(cubeSaderProgram.uniformLocation("material.diffuse"), 1.0f, 0.5f, 0.31f);
+    glUniform3f(cubeSaderProgram.uniformLocation("material.specular"), 0.5f, 0.5f, 0.5f);
+    glUniform1f(cubeSaderProgram.uniformLocation("material.shininess"), 128.0f);
+
+    glUniform3f(cubeSaderProgram.uniformLocation("light.ambient"), lightColor.x, lightColor.y, lightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("light.diffuse"), lightColor.x, lightColor.y, lightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("light.specular"), lightColor.x, lightColor.y, lightColor.z);
+
     for (auto& cube : cubes)
     {
         cube.rotation.y += angle;
@@ -124,7 +134,7 @@ void OpenGLWidget::paintGL()
 
     float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
 
-    float newy = sin(time/1000) * 50 - 25;
+    float newy = sin(time / 1000) * 50 - 25;
     lightCube.position.y = newy;
 
     glm::mat4 model = lightCube.getModel();
