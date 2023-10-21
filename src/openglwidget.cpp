@@ -124,12 +124,14 @@ void OpenGLWidget::paintGL()
 
 
     glUniform1f(cubeSaderProgram.uniformLocation("light.constant"), 1.0);
-    glUniform1f(cubeSaderProgram.uniformLocation("light.linear"), 0.002);
-    glUniform1f(cubeSaderProgram.uniformLocation("light.quadratic"), 0.0019);
+    glUniform1f(cubeSaderProgram.uniformLocation("light.linear"), 0.0002);
+    glUniform1f(cubeSaderProgram.uniformLocation("light.quadratic"), 0.00019);
     glUniform3f(cubeSaderProgram.uniformLocation("light.ambient"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("light.diffuse"), lightColor.x, lightColor.y, lightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("light.specular"), lightColor.x, lightColor.y, lightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("light.position"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("light.position"), camera.Position.x, camera.Position.y, camera.Position.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("light.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
+    glUniform1f(cubeSaderProgram.uniformLocation("light.cutoff"), cos(12.5f * 3.1415 / 180.0f));
 
     for (auto& cube : cubes)
     {
@@ -140,18 +142,16 @@ void OpenGLWidget::paintGL()
         cube.draw(cubeSaderProgram);
     }
 
-    float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
-
-    float newy = sin(time / 1000) * 50 - 25;
-    lightCube.position.y = newy;
-
-    glm::mat4 model = lightCube.getModel();
-    lightShaderProgram.bind();
-    glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
-    glUniformMatrix4fv(lightShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
-    glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-    glUniform3f(lightShaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
-    lightCube.draw(lightShaderProgram);
+    //float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
+    //float newy = sin(time / 1000) * 50 - 25;
+    //lightCube.position.y = newy;
+    //glm::mat4 model = lightCube.getModel();
+    //lightShaderProgram.bind();
+    //glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    //glUniformMatrix4fv(lightShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+    //glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+    //glUniform3f(lightShaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
+    //lightCube.draw(lightShaderProgram);
 }
 
 

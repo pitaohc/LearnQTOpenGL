@@ -9,20 +9,21 @@ struct Material
 	sampler2D specular;
 	float shininess;
 };
-struct Light
+struct Spotlight
 {
 	vec3 position;
+	vec3 direction;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
-
+	float cutoff;
 	float constant;
 	float linear;
 	float quadratic;
 };
 uniform vec3 viewPos;
 uniform Material material;
-uniform Light light;
+uniform Spotlight light;
 float getAttenuation()
 {
 	float dist = length(light.position - FragPos);
@@ -75,9 +76,15 @@ void main()
 	ambient = getAmbient();
 	diffuse = getDiffuse();
 	specular = getSpecular();
-	vec3 result = (ambient  + 
-			      diffuse  +
-				  specular) * getAttenuation() ;
+
+	vec3 lightDir = normalize(FragPos - light.position);
+	float theta = dot(lightDir,normalize(light.direction));
+	vec3 result = ambient;
+	if(theta > light.cutoff)
+	{
+		result += diffuse + specular;
+	}
+	result *= getAttenuation();
 	FragColor = vec4(result ,1.0f);
 
 } 
