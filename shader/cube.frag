@@ -17,6 +17,7 @@ struct Spotlight
 	vec3 diffuse;
 	vec3 specular;
 	float cutoff;
+	float outCutoff;
 	float constant;
 	float linear;
 	float quadratic;
@@ -79,11 +80,10 @@ void main()
 
 	vec3 lightDir = normalize(FragPos - light.position);
 	float theta = dot(lightDir,normalize(light.direction));
+	float epsilon = light.cutoff - light.outCutoff;
+	float intensity = clamp((theta - light.outCutoff) / epsilon,0.0,1.0); //平滑过渡
 	vec3 result = ambient;
-	if(theta > light.cutoff)
-	{
-		result += diffuse + specular;
-	}
+	result += (diffuse + specular) * intensity;
 	result *= getAttenuation();
 	FragColor = vec4(result ,1.0f);
 

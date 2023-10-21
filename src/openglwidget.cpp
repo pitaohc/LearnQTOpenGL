@@ -132,6 +132,7 @@ void OpenGLWidget::paintGL()
     glUniform3f(cubeSaderProgram.uniformLocation("light.position"), camera.Position.x, camera.Position.y, camera.Position.z);
     glUniform3f(cubeSaderProgram.uniformLocation("light.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
     glUniform1f(cubeSaderProgram.uniformLocation("light.cutoff"), cos(12.5f * 3.1415 / 180.0f));
+    glUniform1f(cubeSaderProgram.uniformLocation("light.outCutoff"), cos(20.0f * 3.1415 / 180.0f));
 
     for (auto& cube : cubes)
     {
