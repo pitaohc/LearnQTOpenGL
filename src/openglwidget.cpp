@@ -18,8 +18,9 @@
 constexpr int FPS = 144;
 constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
-constexpr glm::vec3 lightColor(1, 1, 1); //rgb(101, 63, 148)
-//constexpr glm::vec3 lightColor(101.0f/256.0f, 63.0f / 256.0f, 148.0f / 256.0f); //rgb(101, 63, 148)
+constexpr glm::vec3 parallelLightColor(100.0 / 256.0, 100.0 / 256.0, 100.0 / 256.0); //rgb(256, 256, 256)
+constexpr glm::vec3 pointLightColor(185.0 / 256.0, 72.0 / 256.0, 190.0 / 256.0); //rgb(185, 72, 190)
+constexpr glm::vec3 spotLightColor(0.0 / 256.0, 256.0 / 256.0, 0.0 / 256.0); //rgb(101, 63, 148)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
 {
@@ -61,7 +62,7 @@ void OpenGLWidget::initializeGL()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
-    glEnable(GL_CULL_FACE); // 开启面剔除
+    //glEnable(GL_CULL_FACE); // 开启面剔除
 
     //设置lightCube位置
     lightCube.position = LIGHTPOSITIONDEFAULT;
@@ -99,10 +100,8 @@ void OpenGLWidget::initializeGL()
         qCritical() << "shaderProgram link failed!" << endl
             << lightShaderProgram.log() << endl;
     }
-    texture = new QOpenGLTexture(QImage("../resources/texture.png").mirrored());
-#ifdef _DEBUG
-    fmt::print("INFO: texture size: {}x{}\n", texture->width(), texture->height());
-#endif
+    texture = new QOpenGLTexture(QImage("../resources/container2.png").mirrored());
+    texture_spec = new QOpenGLTexture(QImage("../resources/container2_specular.png").mirrored());
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -123,9 +122,39 @@ void OpenGLWidget::paintGL()
     cubeSaderProgram.bind();
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(cubeSaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-    glUniform3f(cubeSaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("lightPos"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
     glUniform3f(cubeSaderProgram.uniformLocation("viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+
+    glUniform1i(cubeSaderProgram.uniformLocation("material.diffuse"), 0);
+    texture->bind(0);
+    glUniform1i(cubeSaderProgram.uniformLocation("material.specular"), 1);
+    texture_spec->bind(1);
+    glUniform1f(cubeSaderProgram.uniformLocation("material.shininess"), 128.0f);
+
+
+    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.constant"), 1.0);
+    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.linear"), 0.0002);
+    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.quadratic"), 0.00019);
+    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.ambient"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.diffuse"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.specular"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.position"), camera.Position.x, camera.Position.y, camera.Position.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
+    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.cutoff"), cos(12.5f * 3.1415 / 180.0f));
+    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.outCutoff"), cos(20.0f * 3.1415 / 180.0f));
+
+    glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.ambient"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.diffuse"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.specular"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.direction"), 0.0f, 50.0f, -100.0f); //平行光
+
+    glUniform1f(cubeSaderProgram.uniformLocation("pointlight0.constant"), 1.0);
+    glUniform1f(cubeSaderProgram.uniformLocation("pointlight0.linear"), 0.002);
+    glUniform1f(cubeSaderProgram.uniformLocation("pointlight0.quadratic"), 0.0019);
+    glUniform3f(cubeSaderProgram.uniformLocation("pointlight0.ambient"), pointLightColor.x, pointLightColor.y, pointLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("pointlight0.diffuse"), pointLightColor.x, pointLightColor.y, pointLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("pointlight0.specular"), pointLightColor.x, pointLightColor.y, pointLightColor.z);
+    glUniform3f(cubeSaderProgram.uniformLocation("pointlight0.position"), lightCube.position.x, lightCube.position.y, lightCube.position.z);
+
     for (auto& cube : cubes)
     {
         cube.rotation.y += angle;
@@ -136,7 +165,6 @@ void OpenGLWidget::paintGL()
     }
 
     float time = QDateTime::currentDateTime().toMSecsSinceEpoch() % (31415 * 2);
-
     float newy = sin(time / 1000) * 50 - 25;
     lightCube.position.y = newy;
 
@@ -145,7 +173,7 @@ void OpenGLWidget::paintGL()
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
-    glUniform3f(lightShaderProgram.uniformLocation("lightColor"), lightColor.x, lightColor.y, lightColor.z);
+    glUniform3f(lightShaderProgram.uniformLocation("lightColor"), pointLightColor.x, pointLightColor.y, pointLightColor.z);
     lightCube.draw(lightShaderProgram);
 
     model = glm::mat4(1.0f);

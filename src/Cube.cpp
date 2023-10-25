@@ -10,36 +10,31 @@ void Cube::create()
         Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(0.0f,0.0f)),//前左下
         Vertex(glm::vec3(+0.5f,-0.5f, 0.5f),glm::vec3(0.0f,0.0f, 1.0f),glm::vec3(1.0f, 1.0f, 1.0f),glm::vec2(1.0f,0.0f)),//前右下
         //后
-        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(0.0f,1.0f)),//后左上
-        Vertex(glm::vec3(+0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(1.0f,1.0f)),//后右上
-        Vertex(glm::vec3(+0.5f,-0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(1.0f,0.0f)),//后右下
-        Vertex(glm::vec3(-0.5f,-0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(0.0f,0.0f)),//后左下
+        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(1.0f,1.0f)),//后左上
+        Vertex(glm::vec3(+0.5f, 0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(0.0f,1.0f)),//后右上
+        Vertex(glm::vec3(+0.5f,-0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(0.0f,0.0f)),//后右下
+        Vertex(glm::vec3(-0.5f,-0.5f,-0.5f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f, 1.0f, 1.0f),glm::vec2(1.0f,0.0f)),//后左下
         //左
         Vertex(glm::vec3(-0.5f, 0.5f, 0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(1.0f,1.0f)),//前左上
-        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(1.0f,0.0f)),//后左上
+        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(0.0f,1.0f)),//后左上
         Vertex(glm::vec3(-0.5f,-0.5f,-0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(0.0f,0.0f)),//后左下
-        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(0.0f,1.0f)),//前左下
+        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(-1.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f),glm::vec2(1.0f,0.0f)),//前左下
         //右
-        Vertex(glm::vec3(0.5f, 0.5f,-0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(0.0f,1.0f)),//后右上
-        Vertex(glm::vec3(0.5f, 0.5f, 0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(1.0f,1.0f)),//前右上
-        Vertex(glm::vec3(0.5f,-0.5f, 0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(1.0f,0.0f)),//前右下
-        Vertex(glm::vec3(0.5f,-0.5f,-0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(0.0f,0.0f)),//后右下
+        Vertex(glm::vec3(0.5f, 0.5f,-0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(1.0f,1.0f)),//后右上
+        Vertex(glm::vec3(0.5f, 0.5f, 0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(0.0f,1.0f)),//前右上
+        Vertex(glm::vec3(0.5f,-0.5f, 0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(0.0f,0.0f)),//前右下
+        Vertex(glm::vec3(0.5f,-0.5f,-0.5f),glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f),glm::vec2(1.0f,0.0f)),//后右下
 
         //上
-        Vertex(glm::vec3(+0.5f, 0.5f,-0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(0.0f,0.0f)),//后右上
-        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(1.0f,0.0f)),//后左上
-        Vertex(glm::vec3(-0.5f, 0.5f, 0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(1.0f,1.0f)),//前左上
-        Vertex(glm::vec3(+0.5f, 0.5f, 0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(0.0f,1.0f)),//前右上
+        Vertex(glm::vec3(+0.5f, 0.5f,-0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(1.0f,1.0f)),//后右上
+        Vertex(glm::vec3(-0.5f, 0.5f,-0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(0.0f,1.0f)),//后左上
+        Vertex(glm::vec3(-0.5f, 0.5f, 0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(0.0f,0.0f)),//前左上
+        Vertex(glm::vec3(+0.5f, 0.5f, 0.5f),glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f, 1.0f, 0.0f),glm::vec2(1.0f,0.0f)),//前右上
         //下
-        Vertex(glm::vec3(+0.5f,-0.5f, 0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(1.0f,0.0f)),//前右下
-        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(0.0f,0.0f)),//前左下
-        Vertex(glm::vec3(-0.5f,-0.5f,-0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(1.0f,1.0f)),//后左下
-        Vertex(glm::vec3(+0.5f,-0.5f,-0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(0.0f,1.0f)),//后右下
-
-        //{-0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前左下
-        //{ 0.5f,-0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //前右下
-        //{-0.5f,-0.5f,-0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后左下
-        //{ 0.5f,-0.5f,-0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //后右下
+        Vertex(glm::vec3(+0.5f,-0.5f, 0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(1.0f,1.0f)),//前右下
+        Vertex(glm::vec3(-0.5f,-0.5f, 0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(0.0f,1.0f)),//前左下
+        Vertex(glm::vec3(-0.5f,-0.5f,-0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(0.0f,0.0f)),//后左下
+        Vertex(glm::vec3(+0.5f,-0.5f,-0.5f),glm::vec3(0.0f,-1.0f,0.0f),glm::vec3(1.0f, 0.0f, 1.0f),glm::vec2(1.0f,0.0f)),//后右下
     };
     indices = {
         0,1,2 , 0,2,3, //前
