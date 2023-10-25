@@ -21,6 +21,9 @@ namespace MESH
         QVector3D position;
         QVector3D norm;
         QVector2D texCoords;
+        Vertex() = default;
+        Vertex(QVector3D pos, QVector3D n, QVector2D uv) :
+            position(pos), norm(n), texCoords(uv) {}
     };
     struct Texture {
         unsigned int id;  //纹理对象ID

@@ -101,7 +101,13 @@ void OpenGLWidget::initializeGL()
             << lightShaderProgram.log() << endl;
     }
     texture = new QOpenGLTexture(QImage("../resources/container2.png").mirrored());
+#ifdef _DEBUG
+    fmt::print("texture {}: {}x{}px\n", texture->textureId(), texture->width(), texture->height());
+#endif // _DEBUG
     texture_spec = new QOpenGLTexture(QImage("../resources/container2_specular.png").mirrored());
+#ifdef _DEBUG
+    fmt::print("texture {}: {}x{}px\n", texture_spec->textureId(), texture_spec->width(), texture_spec->height());
+#endif // _DEBUG
 }
 
 void OpenGLWidget::resizeGL(int w, int h)

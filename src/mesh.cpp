@@ -5,7 +5,28 @@ void MESH::Mesh::draw(QOpenGLShaderProgram& shaderProgram)
     assert(gl != nullptr);
     gl->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     shaderProgram.bind();
-    gl->glBindTexture(GL_TEXTURE_2D, textures.front().id);
+
+    unsigned int diffuseNr = 1;
+    unsigned int specularNr = 1;
+    for (size_t i = 0; i < textures.size(); i++)
+    {
+        int index;
+        const string& type = textures[i].type;
+        if (type == "texture_diffuse")
+        {
+            index = diffuseNr++;
+        }
+        else if (type == "texture_specular")
+        {
+            index = specularNr++;
+        }
+        string finalname = "material." + type + std::to_string(index);
+        gl->glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
+        gl->glUniform1i(shaderProgram.uniformLocation(finalname.c_str()), i); // 绑定shader对象到对应的纹理单元
+        gl->glBindTexture(GL_TEXTURE_2D, textures[i].id); // 提供texture
+    }
+
+
     gl->glBindVertexArray(VAO);
     gl->glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     gl->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -53,34 +74,63 @@ void MESH::Mesh::setupMesh()
 #include <QOpenGLTexture>
 Mesh* MESH::testBuildMesh()
 {
-    vector<Vertex> vertices;
+    vector<Vertex> vertexs;
     vector<unsigned int> indices;
-    Vertex v;
-    v.position = { 0.5f, 0.5f, 0.0f };
-    v.norm = { 0.0f, 0.0f, 1.0f };
-    v.texCoords = { 1.0f, 1.0f };
-    vertices.push_back(v);
-    v.position = { -0.5f, 0.5f, 0.0f };
-    v.norm = { 0.0f, 0.0f, 1.0f };
-    v.texCoords = { 0.0f, 1.0f };
-    vertices.push_back(v);
-    v.position = { -0.5f, -0.5f, 0.0f };
-    v.norm = { 0.0f, 0.0f, 1.0f };
-    v.texCoords = { 0.0f, 0.0f };
-    vertices.push_back(v);
-    v.position = { 0.5f, -0.5f, 0.0f };
-    v.norm = { 0.0f, 0.0f, 1.0f };
-    v.texCoords = { 1.0f, 0.0f };
-    vertices.push_back(v);
-    indices = { 0,1,2,0,2,3 };
+    vertexs = {
+        //前
+        Vertex(QVector3D(+0.5f, 0.5f, 0.5f),QVector3D(1.0f, 1.0f, 1.0f),QVector2D(1.0f,1.0f)),//前右上
+        Vertex(QVector3D(-0.5f, 0.5f, 0.5f),QVector3D(1.0f, 1.0f, 1.0f),QVector2D(0.0f,1.0f)),//前左上
+        Vertex(QVector3D(-0.5f,-0.5f, 0.5f),QVector3D(1.0f, 1.0f, 1.0f),QVector2D(0.0f,0.0f)),//前左下
+        Vertex(QVector3D(+0.5f,-0.5f, 0.5f),QVector3D(1.0f, 1.0f, 1.0f),QVector2D(1.0f,0.0f)),//前右下
+        //后
+        Vertex(QVector3D(-0.5f, 0.5f,-0.5f),QVector3D(0.0f, 1.0f, 1.0f),QVector2D(1.0f,1.0f)),//后左上
+        Vertex(QVector3D(+0.5f, 0.5f,-0.5f),QVector3D(0.0f, 1.0f, 1.0f),QVector2D(0.0f,1.0f)),//后右上
+        Vertex(QVector3D(+0.5f,-0.5f,-0.5f),QVector3D(0.0f, 1.0f, 1.0f),QVector2D(0.0f,0.0f)),//后右下
+        Vertex(QVector3D(-0.5f,-0.5f,-0.5f),QVector3D(0.0f, 1.0f, 1.0f),QVector2D(1.0f,0.0f)),//后左下
+        //左
+        Vertex(QVector3D(-0.5f, 0.5f, 0.5f),QVector3D(0.0f, 0.0f, 1.0f),QVector2D(1.0f,1.0f)),//前左上
+        Vertex(QVector3D(-0.5f, 0.5f,-0.5f),QVector3D(0.0f, 0.0f, 1.0f),QVector2D(0.0f,1.0f)),//后左上
+        Vertex(QVector3D(-0.5f,-0.5f,-0.5f),QVector3D(0.0f, 0.0f, 1.0f),QVector2D(0.0f,0.0f)),//后左下
+        Vertex(QVector3D(-0.5f,-0.5f, 0.5f),QVector3D(0.0f, 0.0f, 1.0f),QVector2D(1.0f,0.0f)),//前左下
+        //右
+        Vertex(QVector3D(0.5f, 0.5f,-0.5f),QVector3D(1.0f, 1.0f, 0.0f),QVector2D(1.0f,1.0f)),//后右上
+        Vertex(QVector3D(0.5f, 0.5f, 0.5f),QVector3D(1.0f, 1.0f, 0.0f),QVector2D(0.0f,1.0f)),//前右上
+        Vertex(QVector3D(0.5f,-0.5f, 0.5f),QVector3D(1.0f, 1.0f, 0.0f),QVector2D(0.0f,0.0f)),//前右下
+        Vertex(QVector3D(0.5f,-0.5f,-0.5f),QVector3D(1.0f, 1.0f, 0.0f),QVector2D(1.0f,0.0f)),//后右下
+        //上
+        Vertex(QVector3D(+0.5f, 0.5f,-0.5f),QVector3D(0.0f, 1.0f, 0.0f),QVector2D(1.0f,1.0f)),//后右上
+        Vertex(QVector3D(-0.5f, 0.5f,-0.5f),QVector3D(0.0f, 1.0f, 0.0f),QVector2D(0.0f,1.0f)),//后左上
+        Vertex(QVector3D(-0.5f, 0.5f, 0.5f),QVector3D(0.0f, 1.0f, 0.0f),QVector2D(0.0f,0.0f)),//前左上
+        Vertex(QVector3D(+0.5f, 0.5f, 0.5f),QVector3D(0.0f, 1.0f, 0.0f),QVector2D(1.0f,0.0f)),//前右上
+        //下
+        Vertex(QVector3D(+0.5f,-0.5f, 0.5f),QVector3D(1.0f, 0.0f, 1.0f),QVector2D(1.0f,1.0f)),//前右下
+        Vertex(QVector3D(-0.5f,-0.5f, 0.5f),QVector3D(1.0f, 0.0f, 1.0f),QVector2D(0.0f,1.0f)),//前左下
+        Vertex(QVector3D(-0.5f,-0.5f,-0.5f),QVector3D(1.0f, 0.0f, 1.0f),QVector2D(0.0f,0.0f)),//后左下
+        Vertex(QVector3D(+0.5f,-0.5f,-0.5f),QVector3D(1.0f, 0.0f, 1.0f),QVector2D(1.0f,0.0f)),//后右下
+    };
+    indices = {
+        0,1,2 , 0,2,3, //前
+        4,5,6 , 4,6,7, //后
+        8,9,10, 8,10,11, //左
+        12,13,14, 12,14,15, //右
+        16,17,18, 16,18,19, //上
+        20,21,22,20,22,23, //下
+    };
+
     vector<Texture> textures;
-    QOpenGLTexture tex(QImage("../resources/texture.png"));
-    textures.push_back({ tex.textureId(), "diffuse", "../resources/texture.png" });
-    QOpenGLTexture tex2 = QOpenGLTexture(QImage("../resources/texture2.png"));
-    textures.push_back({ tex2.textureId(), "diffuse", "../resources/texture2.png" });
+    QOpenGLTexture* tex;
+    tex = new QOpenGLTexture(QImage("../resources/texture.png").mirrored());
+#ifdef _DEBUG
+    fmt::print("texture {}: {}x{}px\n", tex->textureId(), tex->width(), tex->height());
+#endif // _DEBUG
+    textures.push_back({ tex->textureId(), "texture_diffuse", "../resources/texture.png" });
+    tex = new QOpenGLTexture(QImage("../resources/texture2.png").mirrored());
+#ifdef _DEBUG
+    fmt::print("texture {}: {}x{}px\n", tex->textureId(), tex->width(), tex->height());
+#endif // _DEBUG
+    textures.push_back({ tex->textureId(), "texture_diffuse", "../resources/texture2.png" });
     QOpenGLContext* currentContext = QOpenGLContext::currentContext();
     QOpenGLFunctions_3_3_Core* gl = currentContext->versionFunctions<QOpenGLFunctions_3_3_Core>();
     assert(gl != nullptr);
-    return new Mesh(gl, vertices, indices, textures);
-
+    return new Mesh(gl, vertexs, indices, textures);
 }
