@@ -177,8 +177,8 @@ vec3 getParallelDiffuse(ParallelLight light,vec3 normal)
 vec3 getParallelSpecular(ParallelLight light,vec3 normal,vec3 viewDir)
 {
 	float specularStrength = 0.5;
-	vec3 lightDir = normalize(-light.direction); //TODO 去除负号
-	vec3 reflectDir = reflect(-lightDir,normal);
+	vec3 lightDir = normalize(light.direction);
+	vec3 reflectDir = reflect(lightDir,normal);
 	float spec = pow(max(dot(viewDir,reflectDir),0.0),material.shininess);
 	vec3 specular = specularStrength * spec * light.specular;
 	return specular * vec3(texture(material.specular,TexCord)); //为了体现平行光而修改的
