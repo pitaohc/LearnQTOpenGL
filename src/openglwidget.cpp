@@ -20,7 +20,6 @@ constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
 constexpr glm::vec3 parallelLightColor(100.0 / 256.0, 100.0 / 256.0, 100.0 / 256.0); //rgb(256, 256, 256)
 constexpr glm::vec3 pointLightColor(185.0 / 256.0, 72.0 / 256.0, 190.0 / 256.0); //rgb(185, 72, 190)
-constexpr glm::vec3 spotLightColor(0.0 / 256.0, 256.0 / 256.0, 0.0 / 256.0); //rgb(101, 63, 148)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
 {
@@ -136,18 +135,6 @@ void OpenGLWidget::paintGL()
     texture_spec->bind(1);
     glUniform1f(cubeSaderProgram.uniformLocation("material.shininess"), 128.0f);
 
-
-    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.constant"), 1.0);
-    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.linear"), 0.0002);
-    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.quadratic"), 0.00019);
-    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.ambient"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.diffuse"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.specular"), spotLightColor.x, spotLightColor.y, spotLightColor.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.position"), camera.Position.x, camera.Position.y, camera.Position.z);
-    glUniform3f(cubeSaderProgram.uniformLocation("spotlight0.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
-    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.cutoff"), cos(12.5f * 3.1415 / 180.0f));
-    glUniform1f(cubeSaderProgram.uniformLocation("spotlight0.outCutoff"), cos(20.0f * 3.1415 / 180.0f));
-
     glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.ambient"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.diffuse"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
     glUniform3f(cubeSaderProgram.uniformLocation("parallellight0.specular"), parallelLightColor.x, parallelLightColor.y, parallelLightColor.z);
@@ -183,7 +170,8 @@ void OpenGLWidget::paintGL()
     lightCube.draw(lightShaderProgram);
 
     model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+    model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+    model = glm::translate(model, glm::vec3(-10.0f, -10.0f, 0.0f));
     meshShaderProgram.bind();
     glUniformMatrix4fv(meshShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
     glUniformMatrix4fv(meshShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);

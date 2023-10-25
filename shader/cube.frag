@@ -76,7 +76,7 @@ vec3 getPointLight(PointLight light,vec3 normal,vec3 viewDir);
 /* uniform变量声明区 */
 uniform vec3 viewPos;
 uniform Material material;
-uniform SpotLight spotlight0;
+//uniform SpotLight spotlight0;
 uniform ParallelLight parallellight0;
 uniform PointLight pointlight0;
 /* END uniform变量声明区 */
@@ -85,10 +85,11 @@ void main()
 {
 	vec3 norm = normalize(objectNorm);
 	vec3 viewDir = normalize(viewPos - FragPos);
-	vec3 spotLightResult = getSpotLight(spotlight0,norm,viewDir); //聚光灯光照
+//	vec3 spotLightResult = getSpotLight(spotlight0,norm,viewDir); //聚光灯光照
 	vec3 parallelLightResult = getParallelLight(parallellight0,norm,viewDir); //平行光光照
 	vec3 pointLightResult = getPointLight(pointlight0,norm,viewDir); //点光源光照
-	FragColor = vec4((spotLightResult + parallelLightResult + pointLightResult)/3,1.0f);
+	FragColor = vec4((parallelLightResult + pointLightResult)/2,1.0f);
+//	FragColor = vec4((spotLightResult + parallelLightResult + pointLightResult)/3,1.0f);
 }
 
 /*
