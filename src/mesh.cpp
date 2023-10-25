@@ -35,7 +35,10 @@ void MESH::Mesh::draw(QOpenGLShaderProgram& shaderProgram)
 
 void MESH::Mesh::setupMesh()
 {
+    QOpenGLContext* currentContext = QOpenGLContext::currentContext();
+    QOpenGLFunctions_3_3_Core* gl = currentContext->versionFunctions<QOpenGLFunctions_3_3_Core>();
     assert(gl != nullptr);
+    this->gl = gl;
     //生成VAO,VBO,EBO
     gl->glGenVertexArrays(1, &VAO);
     gl->glGenBuffers(1, &VBO);
@@ -129,8 +132,5 @@ Mesh* MESH::testBuildMesh()
     fmt::print("texture {}: {}x{}px\n", tex->textureId(), tex->width(), tex->height());
 #endif // _DEBUG
     textures.push_back({ tex->textureId(), "texture_diffuse", "../resources/texture2.png" });
-    QOpenGLContext* currentContext = QOpenGLContext::currentContext();
-    QOpenGLFunctions_3_3_Core* gl = currentContext->versionFunctions<QOpenGLFunctions_3_3_Core>();
-    assert(gl != nullptr);
-    return new Mesh(gl, vertexs, indices, textures);
+    return new Mesh(vertexs, indices, textures);
 }
