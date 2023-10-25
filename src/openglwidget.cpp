@@ -18,7 +18,7 @@
 constexpr int FPS = 144;
 constexpr glm::vec3 CAMERAPOSITIONDEFAULT(0.0f, 0.0f, 100.0f);
 constexpr glm::vec3 LIGHTPOSITIONDEFAULT(20, 20, 20);
-constexpr glm::vec3 parallelLightColor(100.0 / 256.0, 100.0 / 256.0, 100.0 / 256.0); //rgb(256, 256, 256)
+constexpr glm::vec3 parallelLightColor(200.0 / 256.0, 200.0 / 256.0, 200.0 / 256.0); //rgb(256, 256, 256)
 constexpr glm::vec3 pointLightColor(185.0 / 256.0, 72.0 / 256.0, 190.0 / 256.0); //rgb(185, 72, 190)
 OpenGLWidget::OpenGLWidget(QWidget* parent) :
     QOpenGLWidget(parent), timer(nullptr)
