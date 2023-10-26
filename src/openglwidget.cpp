@@ -68,10 +68,6 @@ void OpenGLWidget::initializeGL()
     lightCube.scale = { 5.0f,5.0f,5.0f };
 
 
-    cubes.push_back(Cube(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f)));
-    cubes.push_back(Cube(glm::vec3(40.0f, -40.0f, 10.0f), glm::vec3(0, 45.0f, 0), glm::vec3(20.0f, 20.0f, 20.0f)));
-
-
     int success = false;
     cubeSaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, "../shader/cube.vert");
     cubeSaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, "../shader/cube.frag");
@@ -107,6 +103,8 @@ void OpenGLWidget::initializeGL()
 #ifdef _DEBUG
     fmt::print("texture {}: {}x{}px\n", texture_spec->textureId(), texture_spec->width(), texture_spec->height());
 #endif // _DEBUG
+
+    model = new Model("E:\\DATA\\杭电\\实验室项目相关文件\\3D水印\\BoundBox\\BoundBox\\res\\nanosuit\\nanosuit.obj");
 }
 
 void OpenGLWidget::resizeGL(int w, int h)
@@ -151,9 +149,9 @@ void OpenGLWidget::paintGL()
     for (auto& cube : cubes)
     {
         cube.rotation.y += angle;
-        glm::mat4 model = cube.getModel();
+        glm::mat4 modelMat = cube.getModel();
         cubeSaderProgram.bind();
-        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("model"), 1, GL_FALSE, &modelMat[0][0]);
         cube.draw(cubeSaderProgram);
     }
 
@@ -161,19 +159,19 @@ void OpenGLWidget::paintGL()
     float newy = sin(time / 1000) * 50 - 25;
     lightCube.position.y = newy;
 
-    glm::mat4 model = lightCube.getModel();
+    glm::mat4 modelMat = lightCube.getModel();
     lightShaderProgram.bind();
-    glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(lightShaderProgram.uniformLocation("model"), 1, GL_FALSE, &modelMat[0][0]);
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(lightShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
     glUniform3f(lightShaderProgram.uniformLocation("lightColor"), pointLightColor.x, pointLightColor.y, pointLightColor.z);
     lightCube.draw(lightShaderProgram);
 
-    model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
-    model = glm::translate(model, glm::vec3(-10.0f, -10.0f, 0.0f));
+    modelMat = glm::mat4(1.0f);
+    modelMat = glm::scale(modelMat, glm::vec3(10.0f, 10.0f, 10.0f));
+    modelMat = glm::translate(modelMat, glm::vec3(-10.0f, -10.0f, 0.0f));
     meshShaderProgram.bind();
-    glUniformMatrix4fv(meshShaderProgram.uniformLocation("model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(meshShaderProgram.uniformLocation("model"), 1, GL_FALSE, &modelMat[0][0]);
     glUniformMatrix4fv(meshShaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
     glUniformMatrix4fv(meshShaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
 
@@ -182,6 +180,16 @@ void OpenGLWidget::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     mesh->draw(meshShaderProgram);
+
+    if (model != nullptr)
+    {
+        modelMat = glm::mat4(1.0f);
+        cubeSaderProgram.bind();
+        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("model"), 1, GL_FALSE, &modelMat[0][0]);
+        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("projection"), 1, GL_FALSE, &projection[0][0]);
+        glUniformMatrix4fv(cubeSaderProgram.uniformLocation("view"), 1, GL_FALSE, &view[0][0]);
+        model->draw(cubeSaderProgram);
+    }
 }
 
 
@@ -243,6 +251,32 @@ void OpenGLWidget::setNewRect(float dx, float dy, float dz)
     roll = (float)(rand() % 3600) / 10.0f - 180;
     cubes.push_back(Cube(glm::vec3(x, y, z), glm::vec3(pitch, yaw, roll), glm::vec3(10.0f, 10.0f, 10.0f)));
 
+}
+
+
+void OpenGLWidget::setModel(const std::string& path)
+{
+    if (model != nullptr)
+    {
+        delete model;
+        model = nullptr;
+    }
+    model = new Model(path.c_str());
+    assert(model != nullptr);
+#ifdef _DEBUG
+    fmt::print("model loaded, number of meshes: {},directory: {}\n",
+        model->meshes.size(), model->directory);
+#endif // _DEBUG
+
+}
+
+void OpenGLWidget::releaseModel()
+{
+    if (model != nullptr)
+    {
+        delete model;
+        model = nullptr;
+    }
 }
 
 void OpenGLWidget::cleanAllRects()

@@ -20,6 +20,10 @@ private slots:
 
     void on_actionClearAllRects_triggered();
 
+    void on_actionImportModel_triggered();
+
+    void on_actionReleaseModel_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

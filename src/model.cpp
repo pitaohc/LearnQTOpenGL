@@ -5,21 +5,22 @@ using namespace MODEL;
 
 void MODEL::Model::draw(Shader& shader)
 {
-   for (unsigned int i = 0; i < meshes.size(); i++)
+
+    for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].draw(shader);
 }
 
 void MODEL::Model::loadModel(std::string& path)
 {
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    Assimp::Importer* importer = new Assimp::Importer;
+    const aiScene* scene = importer->ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     /*
     aiProcess_Triangulate 三角化处理
     aiProcess_FlipUVs 翻转UV坐标
     */
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        qCritical() << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+        qCritical() << "ERROR::ASSIMP::" << importer->GetErrorString() << endl;
         return;
     }
     directory = path.substr(0, path.find_last_of('/'));

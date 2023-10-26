@@ -3,9 +3,9 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #include <fmt/color.h>
-
+#include <QFileDialog>
 #include <random>
-
+#include "model.h"
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -34,5 +34,21 @@ void MainWindow::on_actionClearAllRects_triggered()
 {
     fmt::print("on_actionClearAllRects_triggered\n");
     ui->openGLWidget->cleanAllRects();
-    
+
+}
+
+void MainWindow::on_actionImportModel_triggered()
+{
+    //打开文件对话框
+    QString path = QFileDialog::getOpenFileName(this, tr("Open File"), "E:\\gun\\", tr("FBX Files(*.fbx);;Wavefront(*.obj);;Stl(*.stl)"));
+    if (path.isEmpty())
+    {
+        return;
+    }
+    ui->openGLWidget->setModel(path.toStdString());
+}
+
+void MainWindow::on_actionReleaseModel_triggered()
+{
+    ui->openGLWidget->releaseModel();
 }

@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "cube.h"
 #include "mesh.h"
+#include "model.h"
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -24,6 +25,8 @@ public:
     explicit OpenGLWidget(QWidget* parent = nullptr);
     ~OpenGLWidget();
     void setNewRect(float dx, float dy, float dz);
+    void setModel(const std::string& path);
+    void releaseModel();
     void cleanAllRects();
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -36,6 +39,7 @@ protected:
     void paintGL() override;
 private:
     Mesh* mesh;
+    Model* model;
     float lastX, lastY;
     Cube lightCube;
     QOpenGLTexture* texture;

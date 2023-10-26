@@ -47,6 +47,8 @@
    </attribute>
    <addaction name="actionCreateRect"/>
    <addaction name="actionClearAllRects"/>
+   <addaction name="actionImportModel"/>
+   <addaction name="actionReleaseModel"/>
   </widget>
   <action name="actionCreateRect">
    <property name="text">
@@ -56,6 +58,16 @@
   <action name="actionClearAllRects">
    <property name="text">
     <string>清空矩形</string>
+   </property>
+  </action>
+  <action name="actionImportModel">
+   <property name="text">
+    <string>导入模型</string>
+   </property>
+  </action>
+  <action name="actionReleaseModel">
+   <property name="text">
+    <string>删除模型</string>
    </property>
   </action>
  </widget>

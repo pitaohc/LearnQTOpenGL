@@ -38,9 +38,9 @@ public: //成员函数
     void loadModel(std::string& path);
 public:
     std::vector<Texture> textures_loaded;
-private:
     std::vector<Mesh> meshes;
     std::string directory;
+private:
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
     std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
